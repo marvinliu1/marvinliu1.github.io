@@ -2,6 +2,24 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://marvinliu1.github.io/about/index.html</loc>
+    
+    <lastmod>2022-05-21</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://marvinliu1.github.io/2018/01/02/hello-world/</loc>
+    
+    <lastmod>2022-05-21</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>https://marvinliu1.github.io/2018/05/20/Hexo-update-server-automatically/</loc>
     
     <lastmod>2022-05-21</lastmod>
@@ -32,15 +50,6 @@
     <loc>https://marvinliu1.github.io/categories/index.html</loc>
     
     <lastmod>2022-05-21</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://marvinliu1.github.io/2022/05/17/hello-world/</loc>
-    
-    <lastmod>2022-05-20</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
