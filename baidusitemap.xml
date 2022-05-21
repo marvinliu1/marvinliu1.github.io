@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://marvinliu1.github.io/2018/06/21/Adding-tag-cloud/</loc>
+    <loc>https://marvinliu1.github.io/2018/05/20/Hexo-update-server-automatically/</loc>
     <lastmod>2022-05-21</lastmod>
   </url>
   <url>
-    <loc>https://marvinliu1.github.io/2018/05/20/Hexo-update-server-automatically/</loc>
+    <loc>https://marvinliu1.github.io/2018/06/21/Adding-tag-cloud/</loc>
     <lastmod>2022-05-21</lastmod>
   </url>
   <url>
     <loc>https://marvinliu1.github.io/2022/05/17/hello-world/</loc>
     <lastmod>2022-05-20</lastmod>
-  </url>
-  <url>
-    <loc>https://marvinliu1.github.io/2022/05/17/my-new-post/</loc>
-    <lastmod>2022-05-17</lastmod>
   </url>
 </urlset> 

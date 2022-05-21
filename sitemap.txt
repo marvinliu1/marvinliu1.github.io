@@ -1,8 +1,10 @@
-https://marvinliu1.github.io/2018/06/21/Adding-tag-cloud/
 https://marvinliu1.github.io/2018/05/20/Hexo-update-server-automatically/
+https://marvinliu1.github.io/2018/06/21/Adding-tag-cloud/
+https://marvinliu1.github.io/tags/index.html
+https://marvinliu1.github.io/categories/index.html
 https://marvinliu1.github.io/2022/05/17/hello-world/
 https://marvinliu1.github.io/links/index.html
-https://marvinliu1.github.io/2022/05/17/my-new-post/
 https://marvinliu1.github.io/
 https://marvinliu1.github.io/tags/Hexo/
 https://marvinliu1.github.io/tags/NeXt/
+https://marvinliu1.github.io/categories/Hexo/

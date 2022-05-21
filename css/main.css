@@ -2748,7 +2748,7 @@ mark.search-keyword {
   color: #999;
 }
 .site-state-item {
-  padding: 0px;
+  padding: 0 10px;
 }
 .sidebar .sidebar-button {
   border-bottom: 1px dotted #ccc;
@@ -2803,6 +2803,13 @@ mark.search-keyword {
 }
 .sub-menu {
   border-bottom: 1px solid #ddd;
+}
+.post-block {
+  margin-top: 0px;
+  margin-bottom: 60px;
+  padding: 25px;
+  -webkit-box-shadow: 0 0 10px rgba(202,203,203,0.5);
+  -moz-box-shadow: 0 0 10px rgba(202,203,203,0.5);
 }
 .post-block:first-of-type {
   padding-top: 40px;
