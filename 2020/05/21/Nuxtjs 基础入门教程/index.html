@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#64CEAA"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#64CEAA">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" integrity="sha256-DfWjNxDkM94fVBWx1H5BMMp0Zq7luBlV8QRcSES7s+0=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"marvinliu1.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.11.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="原文链接 Vue 开发一个单页面应用，相信很多前端工程师都已经学会了，但是单页面应用有一个致命的缺点，就是 SEO 极不友好。除非，vue 能在服务端渲染（ssr）并直接返回已经渲染好的页面，而并非只是一个单纯的 &lt;div id&#x3D;&quot;app&quot;&gt;&lt;&#x2F;div&gt;。 Nuxt.js 就是一个极简的 vue 版的 ssr 框架。基于它，我们可以快速开发一个基于 vu">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nuxt.js 基础入门教程">
+<meta property="og:url" content="https://marvinliu1.github.io/2020/05/21/Nuxtjs%20%E5%9F%BA%E7%A1%80%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/index.html">
+<meta property="og:site_name" content="Marvin&#39;s Blog">
+<meta property="og:description" content="原文链接 Vue 开发一个单页面应用，相信很多前端工程师都已经学会了，但是单页面应用有一个致命的缺点，就是 SEO 极不友好。除非，vue 能在服务端渲染（ssr）并直接返回已经渲染好的页面，而并非只是一个单纯的 &lt;div id&#x3D;&quot;app&quot;&gt;&lt;&#x2F;div&gt;。 Nuxt.js 就是一个极简的 vue 版的 ssr 框架。基于它，我们可以快速开发一个基于 vu">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ws3.sinaimg.cn/large/006tNc79gy1fo5dh2n4k5j314k0nq0vu.jpg">
+<meta property="article:published_time" content="2020-05-21T06:12:31.000Z">
+<meta property="article:modified_time" content="2022-05-24T23:05:19.839Z">
+<meta property="article:author" content="Marvin Liu">
+<meta property="article:tag" content="Vue">
+<meta property="article:tag" content="Nuxt">
+<meta property="article:tag" content="Javascript">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ws3.sinaimg.cn/large/006tNc79gy1fo5dh2n4k5j314k0nq0vu.jpg">
+
+
+<link rel="canonical" href="https://marvinliu1.github.io/2020/05/21/Nuxtjs%20%E5%9F%BA%E7%A1%80%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://marvinliu1.github.io/2020/05/21/Nuxtjs%20%E5%9F%BA%E7%A1%80%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/","path":"2020/05/21/Nuxtjs 基础入门教程/","title":"Nuxt.js 基础入门教程"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Nuxt.js 基础入门教程 | Marvin's Blog</title>
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Marvin's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Marvin's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>links</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85"><span class="nav-number">1.</span> <span class="nav-text">安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">目录结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Nuxt-%E7%89%B9%E6%9C%89%E5%87%BD%E6%95%B0"><span class="nav-number">3.</span> <span class="nav-text">Nuxt 特有函数</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#asyncData-context"><span class="nav-number">3.1.</span> <span class="nav-text">asyncData(context)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#fetch-context"><span class="nav-number">3.2.</span> <span class="nav-text">fetch(context)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#head"><span class="nav-number">3.3.</span> <span class="nav-text">head</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#layout"><span class="nav-number">3.4.</span> <span class="nav-text">layout</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#middleware"><span class="nav-number">3.5.</span> <span class="nav-text">middleware</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#transition"><span class="nav-number">3.6.</span> <span class="nav-text">transition</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#validate"><span class="nav-number">3.7.</span> <span class="nav-text">validate</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Begin-Coding"><span class="nav-number">4.</span> <span class="nav-text">Begin Coding</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%89%8D%E7%BD%AE%E5%B7%A5%E4%BD%9C"><span class="nav-number">4.1.</span> <span class="nav-text">前置工作</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#API"><span class="nav-number">4.1.1.</span> <span class="nav-text">API</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#axios"><span class="nav-number">4.1.2.</span> <span class="nav-text">axios</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#scss"><span class="nav-number">4.1.3.</span> <span class="nav-text">scss</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%A6%96%E9%A1%B5"><span class="nav-number">4.2.</span> <span class="nav-text">首页</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%AF%9D%E9%A2%98%E8%AF%A6%E6%83%85"><span class="nav-number">4.3.</span> <span class="nav-text">话题详情</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Marvin Liu"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">Marvin Liu</p>
+  <div class="site-description" itemprop="description">Take in the good!</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">7</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/marvinliu1" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;marvinliu1" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:liuyongquan2010@gmail.com" title="E-Mail → mailto:liuyongquan2010@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+<div style="color:white;">document.designMode='on'</div>
+
+        </div>
+      </div>
+    </div>
+    
+    <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+    <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+    <div class="widget-wrap">
+        <h3 class="widget-title">Tags</h3>
+        <div id="myCanvasContainer" class="widget tagcloud">
+            <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/" rel="tag">Hexo</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/" rel="tag">Javascript</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MarkDown/" rel="tag">MarkDown</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NeXt/" rel="tag">NeXt</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Next/" rel="tag">Next</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nuxt/" rel="tag">Nuxt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vue/" rel="tag">Vue</a><span class="tag-list-count">2</span></li></ul>
+            </canvas>
+        </div>
+    </div>
+    
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/marvinliu1" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://marvinliu1.github.io/2020/05/21/Nuxtjs%20%E5%9F%BA%E7%A1%80%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="Marvin Liu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Marvin's Blog">
+      <meta itemprop="description" content="Take in the good!">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Nuxt.js 基础入门教程 | Marvin's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Nuxt.js 基础入门教程
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2020-05-21 00:12:31" itemprop="dateCreated datePublished" datetime="2020-05-21T00:12:31-06:00">2020-05-21</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Nuxt/" itemprop="url" rel="index"><span itemprop="name">Nuxt</span></a>
+        </span>
+    </span>
+
+  
+    <span id="/2020/05/21/Nuxtjs%20%E5%9F%BA%E7%A1%80%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/" class="post-meta-item leancloud_visitors" data-flag-title="Nuxt.js 基础入门教程" title="Views">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><a target="_blank" rel="noopener" href="https://link.segmentfault.com/?enc=yQ8lENTmwnYOjAcdGWYdHg==.qBZchJpLuLMLzRDxyeXVf6UVQ25JAxbNuYLPFEPnro/p541xocWwP+kE4eVkOX6oSsfN8k4d1lqwyg1sByVw+w==">原文链接</a></p>
+<p>Vue 开发一个单页面应用，相信很多前端工程师都已经学会了，但是单页面应用有一个致命的缺点，就是 SEO 极不友好。除非，vue 能在服务端渲染（ssr）并直接返回已经渲染好的页面，而并非只是一个单纯的 <code>&lt;div id=&quot;app&quot;&gt;&lt;/div&gt;</code>。</p>
+<p><a target="_blank" rel="noopener" href="https://link.segmentfault.com/?enc=oKAZXiPKJ8/UBeXAg0oxiQ==.6cm3QKXDeEFzjZvUTIl8ZIVO9VzX9U3Ie/L9nEcOVTg=">Nuxt.js</a> 就是一个极简的 vue 版的 ssr 框架。基于它，我们可以快速开发一个基于 vue 的 ssr 单页面应用。</p>
+<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><p>Nuxt.js 官方提供了一个模板，可以使用 vue-cli 直接安装。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ vue init nuxt-community/starter-template &lt;project-name&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="目录结构"><a href="#目录结构" class="headerlink" title="目录结构"></a>目录结构</h3><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">.</span><br><span class="line">├── README<span class="selector-class">.md</span></span><br><span class="line">├── assets</span><br><span class="line">├── components</span><br><span class="line">├── layouts</span><br><span class="line">├── middleware</span><br><span class="line">├── node_modules</span><br><span class="line">├── nuxt<span class="selector-class">.config</span><span class="selector-class">.js</span></span><br><span class="line">├── package<span class="selector-class">.json</span></span><br><span class="line">├── pages</span><br><span class="line">├── plugins</span><br><span class="line">├── static</span><br><span class="line">├── store</span><br><span class="line">└── yarn.lock</span><br></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<ol>
+<li><strong>assets</strong>: 资源文件。放置需要经过 webpack 打包处理的资源文件，如 scss，图片，字体等。</li>
+<li><strong>components</strong>: 组件。这里存放在页面中，可以复用的组件。</li>
+<li><strong>layouts</strong>: 布局。页面都需要有一个布局，默认为 default。它规定了一个页面如何布局页面。所有页面都会加载在布局页面中的 <code>&lt;nuxt /&gt;</code> 标签中。如果需要在普通页面中使用下级路由，则需要在页面中添加 <code>&lt;nuxt-child /&gt;</code>。<strong>该目录名为Nuxt.js保留的，不可更改。</strong></li>
+<li><strong>middleware</strong>: 中间件。存放中间件。可以在页面中调用： <code>middleware: &#39;middlewareName&#39;</code> 。</li>
+<li><strong>pages</strong>: 页面。一个 vue 文件即为一个页面。index.vue 为根页面。<ol>
+<li>若需要二级页面，则添加文件夹即可。</li>
+<li>如果页面的名称类似于 <code>_id.vue</code> （以 <code>_</code> 开头），则为动态路由页面，<code>_</code> 后为匹配的变量（params）。</li>
+<li>若变量是必须的，则在文件夹下建立空文件 <code>index.vue</code>。更多的配置请移步至 <a target="_blank" rel="noopener" href="https://link.segmentfault.com/?enc=dqP8fiwxvWcDQejYsgVfnQ==.y26NO9RNGsx08RI8Gi7Imhg7B3G7QLbeJXY0U4CsVIHZ9YnGGZLnh+xUVeE0oWah">官网</a> 。</li>
+</ol>
+</li>
+<li><strong>plugin</strong>: 插件。用于组织那些需要在 <code>根vue.js应用</code> 实例化之前需要运行的 Javascript 插件。<strong>需要注意的是，在任何 Vue 组件的<a target="_blank" rel="noopener" href="https://link.segmentfault.com/?enc=CuYf1e6VrH3SxMCC649nww==.QcZmNcZIQPcT+7faNXV4O9TUsr6jlU05cNgm73fDzNVi1aqdlnZmdzcdJq536xrUKJD0LCAGWxh5KnXKj/ztLA==">生命周期</a>内， 只有 <code>beforeCreate</code> 和 <code>created</code> 这两个钩子方法会在 *客户端和服务端均被调用*。其他钩子方法仅在客户端被调用。</strong></li>
+<li><strong>static</strong>: 静态文件。放置不需要经过 webpack 打包的静态资源。如一些 js, css 库。</li>
+<li><strong>store</strong>: 状态管理。具体使用请移步至 <a target="_blank" rel="noopener" href="https://link.segmentfault.com/?enc=AoDbP9LRa208Jyhj1oUPIA==.HxvxiMQv3Ou9U/o63GW1kHUDxq1nayYomZ4NobYa53IoUibLC+hvDekNvNidL7jG">官网</a>。</li>
+<li><strong>nuxt.config.js</strong>: <code>nuxt.config.js</code> 文件用于组织Nuxt.js 应用的个性化配置，以便覆盖默认配置。具体配置请移步至 <a target="_blank" rel="noopener" href="https://link.segmentfault.com/?enc=Jc3I+GhOcRlE+zP4oHVOSg==.kIVDMKTG/k4jeQsbrBeoBQGx0XP8cxDpRRJHmiXoxH5OpCLe8ayNBuoii6KFqGgq">官网</a>。</li>
+</ol>
+<h3 id="Nuxt-特有函数"><a href="#Nuxt-特有函数" class="headerlink" title="Nuxt 特有函数"></a>Nuxt 特有函数</h3><p>首先，了解一下在 nuxt 的页面中独有的函数&#x2F;变量：</p>
+<h4 id="asyncData-context"><a href="#asyncData-context" class="headerlink" title="asyncData(context)"></a>asyncData(context)</h4><p><code>asyncData</code>方法使得你能够在渲染组件之前异步获取数据。该方法在<strong>服务端</strong>中执行的，所以，请求数据时，<strong>不存在跨域问题</strong>。返回的数据将与 <code>data()</code> 返回的数据进行合并。<strong>由于<code>asyncData</code>方法是在组件 *初始化* 前被调用的，所以在方法内是没有办法通过 <code>this</code> 来引用组件的实例对象。</strong></p>
+<p><code>context</code> 变量的可用属性一览：</p>
+<table>
+<thead>
+<tr>
+<th>属性字段</th>
+<th>类型</th>
+<th>可用</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>isClient</code></td>
+<td>Boolean</td>
+<td>客户端 &amp; 服务端</td>
+<td>是否来自客户端渲染</td>
+</tr>
+<tr>
+<td><code>isServer</code></td>
+<td>Boolean</td>
+<td>客户端 &amp; 服务端</td>
+<td>是否来自服务端渲染</td>
+</tr>
+<tr>
+<td><code>isDev</code></td>
+<td>Boolean</td>
+<td>客户端 &amp; 服务端</td>
+<td>是否是开发(dev) 模式，在生产环境的数据缓存中用到</td>
+</tr>
+<tr>
+<td><code>route</code></td>
+<td><a target="_blank" rel="noopener" href="https://link.segmentfault.com/?enc=EhSnyiweglWgdpqp8ODgIA==.xjoo8ztbhJUNMXi8fVa4u6h//LajKkgw1HOL5ujMVjnX3CR3TahY6+KyvRTTsMDJtnopcWfyF1QQSJMQQos5xQ==">vue-router 路由</a></td>
+<td>客户端 &amp; 服务端</td>
+<td><code>vue-router</code> 路由实例。</td>
+</tr>
+<tr>
+<td><code>store</code></td>
+<td><a target="_blank" rel="noopener" href="https://link.segmentfault.com/?enc=olAv4D/AKolrJdt3ilarDQ==.bddJZIl0ZP2wddJojIjmNaJDX2OlzVNvn1NmE10RfoGJS0Ar71/FrJYwr/o4auKrfkq6GmKEOsOaZiU0Rnp5Wyv9uG7cjoZhn1ZQ5fM8Ttg=">vuex 数据流</a></td>
+<td>客户端 &amp; 服务端</td>
+<td><code>Vuex.Store</code> 实例。<strong>只有vuex 数据流存在相关配置时可用。</strong></td>
+</tr>
+<tr>
+<td><code>env</code></td>
+<td>Object</td>
+<td>客户端 &amp; 服务端</td>
+<td><code>nuxt.config.js</code> 中配置的环境变量, 见 <a target="_blank" rel="noopener" href="https://link.segmentfault.com/?enc=WqVZrMizdFRyKc5oV5TwAA==.ZmzeAp9RGrg/dlq+JbdEFa+oV7cQus/k5ZcttCWkKczqXqEVe2dWUndbwwPnhb9U">环境变量 api</a></td>
+</tr>
+<tr>
+<td><code>params</code></td>
+<td>Object</td>
+<td>客户端 &amp; 服务端</td>
+<td>route.params 的别名</td>
+</tr>
+<tr>
+<td><code>query</code></td>
+<td>Object</td>
+<td>客户端 &amp; 服务端</td>
+<td>route.query 的别名</td>
+</tr>
+<tr>
+<td><code>req</code></td>
+<td><a target="_blank" rel="noopener" href="https://link.segmentfault.com/?enc=ZTcor6Gj8DnBDdIL0JP1BA==.9T6jIC+XMg64OYEopDFLdfj8RDbJTh+rVGu/mOUtVHneBypb5FKeZJgfgRLt3BnnzkU1bN8XfLSZFqSgeuBt/w5JDh+7LtP+j7zKLls4Nfk=">http.Request</a></td>
+<td>服务端</td>
+<td>Node.js API 的 Request 对象。如果 nuxt 以中间件形式使用的话，这个对象就根据你所使用的框架而定。<em>nuxt generate 不可用</em>。</td>
+</tr>
+<tr>
+<td><code>res</code></td>
+<td><a target="_blank" rel="noopener" href="https://link.segmentfault.com/?enc=4efLqkj2Z6mUjgYtyftj8g==.V5Ao0Iz1WlMXw3MS6p/8lUrhqRm0S3KbPVd4IxipJLLMgrmiCF2anjMVzTUNDC28tVxxDa29s5H/sj8FIwwEDg==">http.Response</a></td>
+<td>服务端</td>
+<td>Node.js API 的 Response 对象。如果 nuxt 以中间件形式使用的话，这个对象就根据你所使用的框架而定。<em>nuxt generate 不可用</em>。</td>
+</tr>
+<tr>
+<td><code>redirect</code></td>
+<td>Function</td>
+<td>客户端 &amp; 服务端</td>
+<td>用这个方法重定向用户请求到另一个路由。状态码在服务端被使用，默认 302。<code>redirect([status,] path [, query])</code></td>
+</tr>
+<tr>
+<td><code>error</code></td>
+<td>Function</td>
+<td>客户端 &amp; 服务端</td>
+<td>用这个方法展示错误页：<code>error(params)</code>。<code>params</code> 参数应该包含 <code>statusCode</code> 和 <code>message</code> 字段。</td>
+</tr>
+</tbody></table>
+<h4 id="fetch-context"><a href="#fetch-context" class="headerlink" title="fetch(context)"></a>fetch(context)</h4><p><em>fetch 方法用于在渲染页面前填充应用的状态树（store）数据， 与 asyncData 方法类似，不同的是它不会设置组件的数据。为了让获取过程可以异步，<strong>你需要返回一个 Promise</strong>，Nuxt.js 会等这个 promise 完成后再渲染组件。</em></p>
+<p><strong>fetch 会在组件每次加载前被调用（在服务端或切换至目标路由之前）。</strong></p>
+<h4 id="head"><a href="#head" class="headerlink" title="head"></a>head</h4><p>Nuxt.js 使用了 <a target="_blank" rel="noopener" href="https://link.segmentfault.com/?enc=z6lYOgCdPjX1K5Jdxp8h1Q==.pkZ+oJXV11McTaHeBz5VzvEOW83qsrnpj4Kh8neloASuQu9JDPRFAe28LThj4GM7"><code>vue-meta</code></a> 更新应用的 <code>头部标签(Head)</code> 和 <code>html 属性</code>。</p>
+<p>用于更新 头部信息。如 title，descripe 等。<strong>在 <code>head</code> 方法里可通过 <code>this</code> 关键字来获取组件的数据。</strong></p>
+<h4 id="layout"><a href="#layout" class="headerlink" title="layout"></a>layout</h4><p>指定该页面使用哪个布局文件。默认值为 <code>default</code>。</p>
+<h4 id="middleware"><a href="#middleware" class="headerlink" title="middleware"></a>middleware</h4><p>需要执行的中间件，如鉴权的 <code>auth</code>等。</p>
+<h4 id="transition"><a href="#transition" class="headerlink" title="transition"></a>transition</h4><p>指定页面切换时的动画效果。支持传入 <code>String</code>, <code>Object</code>, <code>Function</code>。具体配置请移步至 <a target="_blank" rel="noopener" href="https://link.segmentfault.com/?enc=RAWcYpUuPwFcTZWtz55mOQ==.X5ahD5RlPNbcwUQpDybb35s/FHUq9+tr9RwAAbKkjKuWRmWH1+dwf7WCyuMZwwzq">官网</a> 。</p>
+<h4 id="validate"><a href="#validate" class="headerlink" title="validate"></a>validate</h4><p>Nuxt.js 可以让你在动态路由对应的页面组件中配置一个校验方法用于校验动态路由参数的有效性。</p>
+<p>返回 <code>true</code> 说明路由有效，则进入路由页面。返回不是 <code>true</code> 则显示 404 页面。</p>
+<h3 id="Begin-Coding"><a href="#Begin-Coding" class="headerlink" title="Begin Coding"></a>Begin Coding</h3><h4 id="前置工作"><a href="#前置工作" class="headerlink" title="前置工作"></a>前置工作</h4><h5 id="API"><a href="#API" class="headerlink" title="API"></a>API</h5><p>在这里，我们使用 <a target="_blank" rel="noopener" href="https://link.segmentfault.com/?enc=Di/FwQuM2z/4k3Sv0z6aUg==.ajZ69v213SEpzGGycaj2JGU/UEOTNpdc9RopP9MQZdg=">CNode API</a> 进行开发 Demo.</p>
+<h5 id="axios"><a href="#axios" class="headerlink" title="axios"></a>axios</h5><p>请求数据，我们使用 Nuxt 官方提供的 <a target="_blank" rel="noopener" href="https://link.segmentfault.com/?enc=b16sKUKlk8RKYn8eU5okEw==.GyeT/0Ge3PyKQBq1AVcsgZnvPKpuWgzktdQevhrJcrSoT85hRHV766C/s4oRo8vZ">@nuxtjs&#x2F;axios</a> 安装后，在 nuxt.config.js 中加上：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span><br><span class="line">  ...</span><br><span class="line">  <span class="attr">modules</span>: [</span><br><span class="line">    <span class="string">&#x27;@nuxtjs/axios&#x27;</span></span><br><span class="line">  ],</span><br><span class="line">  <span class="attr">axios</span>: &#123;</span><br><span class="line">    <span class="attr">baseURL</span>: <span class="string">&#x27;https://cnodejs.org/api/v1&#x27;</span>,</span><br><span class="line">    <span class="comment">// or other axios configs.</span></span><br><span class="line">  &#125;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>就可以在页面中通过 <code>this.$axios.$get</code> 来获取数据，不需要在每个页面都单独引入 axios.</p>
+<h5 id="scss"><a href="#scss" class="headerlink" title="scss"></a>scss</h5><p>需要先安装 sass-loader 和 node-sass</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$    yarn add sass-loader node-sass --dev</span><br></pre></td></tr></table></figure>
+
+<p>如果需要在项目中全局使用某个 scss 文件（如 mixins, vars 等），需要借助 sass-resources-loader : <code>yarn add sass-resources-loader —dev</code>， 还需要在 nuxt.config.js 的 build 配置中调整导出的 loader 配置：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span><br><span class="line">  ...</span><br><span class="line">  <span class="attr">build</span>: &#123;</span><br><span class="line">    <span class="title function_">extend</span>(<span class="params">config, &#123; isDev, isClient &#125;</span>) &#123;</span><br><span class="line">      <span class="keyword">const</span> sassResourcesLoader = &#123;  </span><br><span class="line">        <span class="attr">loader</span>: <span class="string">&#x27;sass-resources-loader&#x27;</span>,  </span><br><span class="line">        <span class="attr">options</span>: &#123;  </span><br><span class="line">          <span class="attr">resources</span>: [</span><br><span class="line">            <span class="comment">// 填写需要全局注入 scss 的文件。引入后，所有页面均有效。</span></span><br><span class="line">            <span class="string">&#x27;assets/styles/mixins.scss&#x27;</span>  </span><br><span class="line">          ]</span><br><span class="line">        &#125;  </span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// 修改 scss sass 引用的 loader。</span></span><br><span class="line">      config.<span class="property">module</span>.<span class="property">rules</span>.<span class="title function_">forEach</span>(<span class="function">(<span class="params">rule</span>) =&gt;</span> &#123;  </span><br><span class="line">        <span class="keyword">if</span> (rule.<span class="property">test</span>.<span class="title function_">toString</span>() === <span class="string">&#x27;/\\.vue$/&#x27;</span>) &#123;  </span><br><span class="line">          rule.<span class="property">options</span>.<span class="property">loaders</span>.<span class="property">sass</span>.<span class="title function_">push</span>(sassResourcesLoader)  </span><br><span class="line">          rule.<span class="property">options</span>.<span class="property">loaders</span>.<span class="property">scss</span>.<span class="title function_">push</span>(sassResourcesLoader)  </span><br><span class="line">        &#125;  </span><br><span class="line">        <span class="keyword">if</span> ([<span class="string">&#x27;/\\.sass$/&#x27;</span>, <span class="string">&#x27;/\\.scss$/&#x27;</span>].<span class="title function_">indexOf</span>(rule.<span class="property">test</span>.<span class="title function_">toString</span>()) !== -<span class="number">1</span>) &#123;  </span><br><span class="line">          rule.<span class="property">use</span>.<span class="title function_">push</span>(sassResourcesLoader)  </span><br><span class="line">        &#125;  </span><br><span class="line">      &#125;)  </span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="首页"><a href="#首页" class="headerlink" title="首页"></a>首页</h4><p>首页一般只需要简单的获取首页数据并渲染即可。</p>
+<p>主要 代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">asyncData</span>(<span class="params">&#123;app, query&#125;</span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(query)</span><br><span class="line">  <span class="comment">// 根据不用的标签获取不同的数据，最后返回话题列表。</span></span><br><span class="line">  <span class="keyword">return</span> app.<span class="property">$axios</span>.$get(<span class="string">`topics?tab=<span class="subst">$&#123;query.tab || <span class="string">&#x27;&#x27;</span>&#125;</span>`</span>).<span class="title function_">then</span>(<span class="function"><span class="params">res</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// console.log(res)</span></span><br><span class="line">    <span class="comment">// console.log(JSON.parse(res))</span></span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="attr">list</span>: res.<span class="property">data</span>&#125;</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当进入首页时，该函数会被执行， nuxt 会等到获取数据后再和组件的 data 合并，进而渲染数据。在模板中，可以直接使用 list 变量获取数据。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;card fluid topic&quot;</span> <span class="attr">v-for</span>=<span class="string">&quot;topic in list&quot;</span> <span class="attr">:key</span>=<span class="string">&quot;topic.id&quot;</span> &gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">class</span>=<span class="string">&quot;section&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">h3</span>&gt;</span><span class="tag">&lt;<span class="name">nuxt-link</span> <span class="attr">:to</span>=<span class="string">&quot;&#123;name: &#x27;topic-id&#x27;, params: &#123;id: topic.id&#125;&#125;&quot;</span> <span class="attr">class</span>=<span class="string">&quot;topic-title&quot;</span>&gt;</span>&#123;&#123;topic.title&#125;&#125;<span class="tag">&lt;/<span class="name">nuxt-link</span>&gt;</span><span class="tag">&lt;/<span class="name">h3</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">p</span> <span class="attr">class</span>=<span class="string">&quot;topic-info&quot;</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">mark</span> <span class="attr">v-if</span>=<span class="string">&quot;topic.top&quot;</span> <span class="attr">class</span>=<span class="string">&quot;tertiary&quot;</span>&gt;</span>精华<span class="tag">&lt;/<span class="name">mark</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">mark</span> <span class="attr">v-else</span>&gt;</span>&#123;&#123;tabsObj[topic.tab]&#125;&#125;<span class="tag">&lt;/<span class="name">mark</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">span</span> <span class="attr">class</span>=<span class="string">&quot;avatar&quot;</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">img</span> <span class="attr">:src</span>=<span class="string">&quot;topic.author.avatar_url&quot;</span> <span class="attr">alt</span>=<span class="string">&quot;&quot;</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">span</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">span</span> <span class="attr">class</span>=<span class="string">&quot;username&quot;</span>&gt;</span></span><br><span class="line">        &#123;&#123;topic.author.loginname&#125;&#125;</span><br><span class="line">      <span class="tag">&lt;/<span class="name">span</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>在这里提及一下， <code>&lt;nuxt-link /&gt;</code> 和 <code>&lt;a /&gt;</code> 的区别是： <code>nuxt-link</code> 走的是 vue-router 的路由，即网页已为单页面，并且浏览器不会重定向。而 <code>a</code> 标签走的是 <code>window.location.href</code>，每一次点击 <code>a</code> 标签后的页面，都会进行一次服务端渲染，和普通的 PHP 混合开发没有太大的区别。</p>
+<p>在这里使用了 <code>nuxt-link</code> 是因为 CNode 的 API 不存在跨域问题，因此可以作为一个单页面应用，体验更好。</p>
+<p>因为列表页数据类型有多种，该页面可能会被复用，所以当路由对象发生变化时，需要重新获取数据，这时可以监听路由的变化以做出响应：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">watch</span>: &#123;</span><br><span class="line">  <span class="string">&#x27;$route&#x27;</span>: <span class="keyword">function</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;$route has changed.&#x27;</span>)</span><br><span class="line">    <span class="variable language_">this</span>.<span class="title function_">getData</span>()</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>配置 seo 优化（这里只是单纯的复制罢了，demo 使用，侵删）：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">head</span>(<span class="params"></span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> &#123;</span><br><span class="line">    <span class="attr">title</span>: <span class="string">&#x27;首页&#x27;</span> + (<span class="variable language_">this</span>.<span class="property">$route</span>.<span class="property">query</span>.<span class="property">tab</span> ? <span class="string">`- <span class="subst">$&#123;<span class="variable language_">this</span>.tabsObj[<span class="variable language_">this</span>.$route.query.tab]&#125;</span>`</span> : <span class="string">&#x27;&#x27;</span>),</span><br><span class="line">    <span class="attr">meta</span>: [&#123;</span><br><span class="line">      <span class="attr">hid</span>: <span class="string">&#x27;description&#x27;</span>,</span><br><span class="line">      <span class="attr">name</span>: <span class="string">&#x27;description&#x27;</span>,</span><br><span class="line">      <span class="attr">content</span>: <span class="string">&#x27;CNode：Node.js专业中文社区&#x27;</span></span><br><span class="line">    &#125;]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="话题详情"><a href="#话题详情" class="headerlink" title="话题详情"></a>话题详情</h4><p>同样的，使用 <code>asyncData</code> 函数进行获取数据，再渲染页面。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">asyncData</span>(<span class="params">&#123;app, params&#125;</span>) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">log</span>(params)</span><br><span class="line">  <span class="keyword">return</span> app.<span class="property">$axios</span>.$get(<span class="string">&#x27;topic/&#x27;</span> + params.<span class="property">id</span>).<span class="title function_">then</span>(<span class="function"><span class="params">res</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// let data = res.data instanceof String ? JSON.parse(res.data) : res.data</span></span><br><span class="line">    <span class="keyword">let</span> data = res.<span class="property">data</span></span><br><span class="line">    <span class="comment">// console.log(res)</span></span><br><span class="line">    <span class="comment">// let div = document.createElement(&#x27;div&#x27;)</span></span><br><span class="line">    <span class="comment">// div.innerHTML = res.data.data.content</span></span><br><span class="line">    <span class="comment">// res.data.summary = div.innerText.substr(0, 120)</span></span><br><span class="line">    data.<span class="property">summary</span> = data.<span class="property">content</span>.<span class="title function_">replace</span>(<span class="regexp">/&lt;[^&gt;]+&gt;/g</span>,<span class="string">&quot;&quot;</span>).<span class="title function_">substr</span>(<span class="number">0</span>, <span class="number">120</span>).<span class="title function_">replace</span>(<span class="regexp">/\s+/g</span>, <span class="string">&#x27;&#x27;</span>)</span><br><span class="line">    <span class="keyword">return</span> &#123;<span class="attr">detail</span>: data&#125;</span><br><span class="line">  &#125;).<span class="title function_">catch</span>(<span class="function"><span class="params">err</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">log</span>(<span class="string">&#x27;axios.get failed.&#x27;</span>)</span><br><span class="line">    <span class="variable language_">console</span>.<span class="title function_">error</span>(err)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在这里，踩过坑。想使用 div 的 innerText 来过滤掉正文中的 HTML 标签，但是，如果用户是直接进入这个页面的时候，执行 <code>asyncData</code> 时，<code>document</code> 对象是不存在的，从而会报错。也就是说，<strong>当 <code>asyncData</code> 在服务端执行时，是没有 <code>document</code> 和 <code>window</code> 对象的</strong>，请大家注意一下。</p>
+<p>作为一个社区，seo 尤为重要，倘若每个页面都需要写一大堆的 head 对象，就会显得尤其的繁琐。所以可以借助 nuxt 的 plugin 机制，将其封装成一个函数，并注入到每一个页面当中：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// plugins/global.js</span></span><br><span class="line"><span class="keyword">import</span> <span class="title class_">Vue</span> <span class="keyword">from</span> <span class="string">&#x27;vue&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="title class_">Vue</span>.<span class="title function_">mixin</span>(&#123;</span><br><span class="line">  <span class="attr">methods</span>: &#123;</span><br><span class="line">    <span class="comment">// 必传 标题，描述。其他的 meta 标签通过 payload 注入，其中，每个 meta 的 hid 需要是唯一的。</span></span><br><span class="line">    $seo(title, content, payload = []) &#123;</span><br><span class="line">      <span class="keyword">return</span> &#123;</span><br><span class="line">        title,</span><br><span class="line">        <span class="attr">meta</span>: [&#123;</span><br><span class="line">          <span class="attr">hid</span>: <span class="string">&#x27;description&#x27;</span>,</span><br><span class="line">          <span class="attr">name</span>: <span class="string">&#x27;description&#x27;</span>,</span><br><span class="line">          content</span><br><span class="line">        &#125;].<span class="title function_">concat</span>(payload)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>在 nuxt.config.js 中加上：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> &#123;</span><br><span class="line">  <span class="attr">plugins</span>: [</span><br><span class="line">    <span class="string">&#x27;~plugins/global.js&#x27;</span></span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这样，只需要在页面的 <code>head</code> 的函数中，返回该函数即可：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">head</span>(<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable language_">this</span>.$seo(<span class="variable language_">this</span>.<span class="property">detail</span>.<span class="property">title</span>, <span class="variable language_">this</span>.<span class="property">detail</span>.<span class="property">summary</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://ws3.sinaimg.cn/large/006tNc79gy1fo5dh2n4k5j314k0nq0vu.jpg" alt="详情页 seo"></p>
+<p>可见，详情页已经成功的设置了部分 seo 的标签。</p>
+<p>以上是 Nuxt 的一些基础配置及应用。</p>
+<p>我再去研究一下， fetch 和 store 的结合，将该 demo 继续完善。</p>
+<p><a target="_blank" rel="noopener" href="https://link.segmentfault.com/?enc=331HKnZd3kx5B1qCBrwcXA==./hS2koJfqK9p6Gks+EtJzWApn0CRW6/euao2ucSNO4Mlp2aqxoM5kTRsykytJaym">Demo 线上地址</a><br><a target="_blank" rel="noopener" href="https://link.segmentfault.com/?enc=HarIRi3qPBbQoNhoQ7QVUw==.WKJ82vJ2UfufyamtZ8nOA4OyetwRWtPtxu3dG4SdihXLLbdB0Ak0qa2gft6EYq13">GitHub 地址</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Post author:  </strong>Marvin Liu
+  </li>
+  <li class="post-copyright-link">
+      <strong>Post link: </strong>
+      <a href="https://marvinliu1.github.io/2020/05/21/Nuxtjs%20%E5%9F%BA%E7%A1%80%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/" title="Nuxt.js 基础入门教程">https://marvinliu1.github.io/2020/05/21/Nuxtjs 基础入门教程/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice:  </strong>All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/en" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> unless stating additionally.
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Vue/" rel="tag"><i class="fa fa-tag"></i> Vue</a>
+              <a href="/tags/Nuxt/" rel="tag"><i class="fa fa-tag"></i> Nuxt</a>
+              <a href="/tags/Javascript/" rel="tag"><i class="fa fa-tag"></i> Javascript</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/05/21/Markdown%E5%85%AC%E5%BC%8F%E7%94%A8%E6%B3%95%E5%A4%A7%E5%85%A8/" rel="prev" title="Markdown公式用法大全">
+                  <i class="fa fa-chevron-left"></i> Markdown公式用法大全
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2018/06/21/Adding-tag-cloud/" rel="next" title="Adding tag cloud">
+                  Adding tag cloud <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2018  
+  <!-- <span itemprop="copyrightYear">2022</span> -->
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Marvin Liu</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"appid":"qAsjmBkdw5m0pBHIrH2owQQT-MdYXbMMI","appkey":"xmNL8CNHrbd2QvJOzWwbj3ny","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>
