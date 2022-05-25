@@ -317,15 +317,6 @@
   </url>
   
   <url>
-    <loc>https://marvinliu1.github.io/2022/05/22/Adding-links-into-Hexo-NexT8%20/</loc>
-    
-    <lastmod>2022-05-24</lastmod>
-    
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
     <loc>https://marvinliu1.github.io/2020/09/25/How-To-Implement-Auth-in-Nuxt/</loc>
     
     <lastmod>2022-05-24</lastmod>
@@ -433,20 +424,6 @@
   </url>
   
   <url>
-    <loc>https://marvinliu1.github.io/tags/MarkDown/</loc>
-    <lastmod>2022-05-25</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://marvinliu1.github.io/tags/Next/</loc>
-    <lastmod>2022-05-25</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://marvinliu1.github.io/tags/Nohup/</loc>
     <lastmod>2022-05-25</lastmod>
     <changefreq>weekly</changefreq>
@@ -455,6 +432,20 @@
   
   <url>
     <loc>https://marvinliu1.github.io/tags/Linux/</loc>
+    <lastmod>2022-05-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://marvinliu1.github.io/tags/MarkDown/</loc>
+    <lastmod>2022-05-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://marvinliu1.github.io/tags/Next/</loc>
     <lastmod>2022-05-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
