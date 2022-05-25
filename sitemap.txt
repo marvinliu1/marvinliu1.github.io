@@ -32,6 +32,7 @@ https://marvinliu1.github.io/2019/03/23/1.2.1%20%E4%BD%BF%E7%94%A8%20v8-profiler
 https://marvinliu1.github.io/2019/03/21/1.1.1%20perf/
 https://marvinliu1.github.io/2020/05/21/Markdown%E5%85%AC%E5%BC%8F%E7%94%A8%E6%B3%95%E5%A4%A7%E5%85%A8/
 https://marvinliu1.github.io/2019/05/21/Nuxtjs%20%E5%9F%BA%E7%A1%80%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/
+https://marvinliu1.github.io/2022/05/22/Adding-links-into-Hexo-NexT8%20/
 https://marvinliu1.github.io/2020/09/25/How-To-Implement-Auth-in-Nuxt/
 https://marvinliu1.github.io/links/index.html
 https://marvinliu1.github.io/about/index.html
@@ -45,10 +46,10 @@ https://marvinliu1.github.io/tags/Debugging/
 https://marvinliu1.github.io/tags/Hexo/
 https://marvinliu1.github.io/tags/NeXt/
 https://marvinliu1.github.io/tags/Vue/
-https://marvinliu1.github.io/tags/MarkDown/
-https://marvinliu1.github.io/tags/Next/
 https://marvinliu1.github.io/tags/Nohup/
 https://marvinliu1.github.io/tags/Linux/
+https://marvinliu1.github.io/tags/MarkDown/
+https://marvinliu1.github.io/tags/Next/
 https://marvinliu1.github.io/tags/Nuxt/
 https://marvinliu1.github.io/tags/Javascript/
 https://marvinliu1.github.io/categories/Node-in-Debugging/
