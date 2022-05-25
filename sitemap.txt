@@ -1,3 +1,4 @@
+https://marvinliu1.github.io/2021/05/22/Adding%20links%20into%20Hexo%20NexT8%20/
 https://marvinliu1.github.io/2019/07/21/Nohup-exit/
 https://marvinliu1.github.io/2019/06/21/Adding-tag-cloud/
 https://marvinliu1.github.io/2019/11/28/7.2%20Telegraf%20+%20InfluxDB%20+%20Grafana(%E4%B8%8B)/
@@ -46,10 +47,10 @@ https://marvinliu1.github.io/tags/Debugging/
 https://marvinliu1.github.io/tags/Hexo/
 https://marvinliu1.github.io/tags/NeXt/
 https://marvinliu1.github.io/tags/Vue/
-https://marvinliu1.github.io/tags/Nohup/
-https://marvinliu1.github.io/tags/Linux/
 https://marvinliu1.github.io/tags/MarkDown/
 https://marvinliu1.github.io/tags/Next/
+https://marvinliu1.github.io/tags/Nohup/
+https://marvinliu1.github.io/tags/Linux/
 https://marvinliu1.github.io/tags/Nuxt/
 https://marvinliu1.github.io/tags/Javascript/
 https://marvinliu1.github.io/categories/Node-in-Debugging/
