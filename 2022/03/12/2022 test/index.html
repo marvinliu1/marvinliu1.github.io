@@ -28,9 +28,8 @@
 <meta property="og:description" content="本文转载自Cu Blog NexT 主题自带的并没有友链页面，本着 “可以不用但必须有” 的思想，我通过搜索引擎找到了可行的解决方案，在此记录，希望能帮到其他人。 NexT 版本：8.10.1。 先看一下最终效果吧：  NexT 配置文件修改打开_config.next.yml 文件，搜索_data，能够找到这样一条被注释的语句：style: source&#x2F;_data&#x2F;styles.styl，取消">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://marvinliu1.github.io/images/blogs/favlinks.png">
-<meta property="og:image" content="https://marvinliu1.github.io/2022/03/12/2022%20test/&#123;&#123;%20link.avatar%20&#125;&#125;">
 <meta property="article:published_time" content="2022-03-12T07:00:00.000Z">
-<meta property="article:modified_time" content="2022-05-25T15:42:48.820Z">
+<meta property="article:modified_time" content="2022-05-25T15:46:38.233Z">
 <meta property="article:author" content="Marvin Liu">
 <meta property="article:tag" content="Linux">
 <meta name="twitter:card" content="summary">
@@ -311,28 +310,8 @@
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">友链: /links || fas fa-link</span><br></pre></td></tr></table></figure>
 
 <h2 id="创建友链页面"><a href="#创建友链页面" class="headerlink" title="创建友链页面"></a>创建友链页面</h2><p>使用 <code>hexo new page link</code> 可以新建一个 link 页面，我们将其作为友链页面。创建完成后，写入以下内容（自己使用时请按需修改）：</p>
-<pre><code>---
-title: 友链
-type: links
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: 友链</span><br><span class="line"><span class="built_in">type</span>: links</span><br><span class="line"></span><br><span class="line">---</span><br><span class="line"></span><br><span class="line">&lt;div class=<span class="string">&quot;links-content&quot;</span>&gt;</span><br><span class="line">&lt;div class=<span class="string">&quot;no-icon note warning&quot;</span>&gt;</span><br><span class="line">&lt;div class=<span class="string">&quot;link-info&quot;</span>&gt;欢迎与我交换友链！&lt;/div&gt;&lt;/div&gt;</span><br><span class="line">&lt;div class=<span class="string">&quot;link-navigation&quot;</span>&gt;</span><br><span class="line">&#123;% <span class="keyword">for</span> <span class="built_in">link</span> <span class="keyword">in</span> site.data.links %&#125;</span><br><span class="line">&lt;div class=<span class="string">&quot;card&quot;</span>&gt;&lt;img class=<span class="string">&quot;ava nomediumzoom&quot;</span> src=<span class="string">&quot;&#123;&#123; link.avatar &#125;&#125;&quot;</span>/&gt;</span><br><span class="line">&lt;div class=<span class="string">&quot;card-header&quot;</span>&gt;</span><br><span class="line">&lt;div&gt;&lt;a href=<span class="string">&quot;&#123;&#123; link.site &#125;&#125;&quot;</span> target=<span class="string">&quot;_blank&quot;</span>&gt; &#123;&#123; link.name &#125;&#125;&lt;/a&gt; &lt;/div&gt;</span><br><span class="line">&lt;div class=<span class="string">&quot;info&quot;</span>&gt;&#123;&#123; link.info &#125;&#125;&lt;/div&gt;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line">&#123;% endfor %&#125;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
----
-
-&lt;div class=&quot;links-content&quot;&gt;
-&lt;div class=&quot;no-icon note warning&quot;&gt;
-&lt;div class=&quot;link-info&quot;&gt;欢迎与我交换友链！&lt;/div&gt;&lt;/div&gt;
-&lt;div class=&quot;link-navigation&quot;&gt;
-&#123;% for link in site.data.links %&#125;
-<div class="card"><img class="ava nomediumzoom" src="&#123;&#123; link.avatar &#125;&#125;"/>
-<div class="card-header">
-<div><a href="&#123;&#123; link.site &#125;&#125;" target="_blank"> &#123;&#123; link.name &#125;&#125;</a> </div>
-<div class="info">&#123;&#123; link.info &#125;&#125;</div>
-</div>
-</div>
-&#123;% endfor %&#125;
-&lt;/div&gt;
-
-
-</code></pre>
 
     </div>
 
