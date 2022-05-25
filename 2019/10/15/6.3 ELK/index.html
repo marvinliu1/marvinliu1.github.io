@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#64CEAA"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#64CEAA">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" integrity="sha256-DfWjNxDkM94fVBWx1H5BMMp0Zq7luBlV8QRcSES7s+0=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"marvinliu1.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.11.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Node in Debugging ELK 是 ElasticSearch + Logstash + Kibana 这套组合工具的简称，是一个常用的日志系统。  ElasticSearch：是一款开源的基于 Lucene 之上实现的一个分布式搜索引擎，也是一个存储引擎（例如：日志），它的特点有：分布式、零配置、自动发现、索引自动分片、索引副本机制、Restful 风格的接口、多数据源和自动搜索负载">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Node in Debugging - 6.3 ELK">
+<meta property="og:url" content="https://marvinliu1.github.io/2019/10/15/6.3%20ELK/index.html">
+<meta property="og:site_name" content="Marvin&#39;s Blog">
+<meta property="og:description" content="Node in Debugging ELK 是 ElasticSearch + Logstash + Kibana 这套组合工具的简称，是一个常用的日志系统。  ElasticSearch：是一款开源的基于 Lucene 之上实现的一个分布式搜索引擎，也是一个存储引擎（例如：日志），它的特点有：分布式、零配置、自动发现、索引自动分片、索引副本机制、Restful 风格的接口、多数据源和自动搜索负载">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://marvinliu1.github.io/assets/6.3.1.png">
+<meta property="og:image" content="https://marvinliu1.github.io/assets/6.3.2.png">
+<meta property="og:image" content="https://marvinliu1.github.io/assets/6.3.3.png">
+<meta property="og:image" content="https://marvinliu1.github.io/assets/6.3.4.png">
+<meta property="article:published_time" content="2019-10-15T06:00:00.000Z">
+<meta property="article:modified_time" content="2022-05-25T04:28:29.086Z">
+<meta property="article:author" content="Marvin Liu">
+<meta property="article:tag" content="Node">
+<meta property="article:tag" content="Debugging">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://marvinliu1.github.io/assets/6.3.1.png">
+
+
+<link rel="canonical" href="https://marvinliu1.github.io/2019/10/15/6.3%20ELK/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://marvinliu1.github.io/2019/10/15/6.3%20ELK/","path":"2019/10/15/6.3 ELK/","title":"Node in Debugging - 6.3 ELK"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Node in Debugging - 6.3 ELK | Marvin's Blog</title>
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Marvin's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Marvin's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>links</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#6-3-1-%E5%AE%89%E8%A3%85-ELK"><span class="nav-number">1.</span> <span class="nav-text">6.3.1 安装 ELK</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-3-2-%E4%BD%BF%E7%94%A8-ELK"><span class="nav-number">2.</span> <span class="nav-text">6.3.2 使用 ELK</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-3-3-%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">3.</span> <span class="nav-text">6.3.3 参考链接</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Marvin Liu"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Marvin Liu</p>
+  <div class="site-description" itemprop="description">Take in the good!</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/marvinliu1" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;marvinliu1" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:liuyongquan2010@gmail.com" title="E-Mail → mailto:liuyongquan2010@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+<div style="color:white;">document.designMode='on'</div>
+
+        </div>
+      </div>
+    </div>
+    
+    <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+    <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+    <div class="widget-wrap">
+        <h3 class="widget-title">Tags</h3>
+        <div id="myCanvasContainer" class="widget tagcloud">
+            <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Debugging/" rel="tag">Debugging</a><span class="tag-list-count">30</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/" rel="tag">Hexo</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/" rel="tag">Javascript</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MarkDown/" rel="tag">MarkDown</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NeXt/" rel="tag">NeXt</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Next/" rel="tag">Next</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Node/" rel="tag">Node</a><span class="tag-list-count">30</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nuxt/" rel="tag">Nuxt</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vue/" rel="tag">Vue</a><span class="tag-list-count">3</span></li></ul>
+            </canvas>
+        </div>
+    </div>
+    
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/marvinliu1" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://marvinliu1.github.io/2019/10/15/6.3%20ELK/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Marvin Liu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Marvin's Blog">
+      <meta itemprop="description" content="Take in the good!">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Node in Debugging - 6.3 ELK | Marvin's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Node in Debugging - 6.3 ELK
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2019-10-15 00:00:00" itemprop="dateCreated datePublished" datetime="2019-10-15T00:00:00-06:00">2019-10-15</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Node-in-Debugging/" itemprop="url" rel="index"><span itemprop="name">Node in Debugging</span></a>
+        </span>
+    </span>
+
+  
+    <span id="/2019/10/15/6.3%20ELK/" class="post-meta-item leancloud_visitors" data-flag-title="Node in Debugging - 6.3 ELK" title="Views">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><a target="_blank" rel="noopener" href="https://github.com/nswbmw/node-in-debugging">Node in Debugging</a></p>
+<p>ELK 是 ElasticSearch + Logstash + Kibana 这套组合工具的简称，是一个常用的日志系统。</p>
+<ul>
+<li>ElasticSearch：是一款开源的基于 Lucene 之上实现的一个分布式搜索引擎，也是一个存储引擎（例如：日志），它的特点有：分布式、零配置、自动发现、索引自动分片、索引副本机制、Restful 风格的接口、多数据源和自动搜索负载等。</li>
+<li>Logstash：是一款开源的日志收集工具，它可以对日志进行收集、分析、过滤，并将其存储（例如：ElasticSearch）起来供以后使用。</li>
+<li>Kibana：是一款开源的可视化工具，可以为 ElasticSearch 提供的日志分析友好的 Web 界面，可以汇总、分析和搜索重要的数据日志。</li>
+</ul>
+<h2 id="6-3-1-安装-ELK"><a href="#6-3-1-安装-ELK" class="headerlink" title="6.3.1 安装 ELK"></a>6.3.1 安装 ELK</h2><p>我们使用 Docker 安装 ELK，运行如下命令：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ docker run -p 5601:5601 \</span><br><span class="line">    -p 9200:9200 \</span><br><span class="line">    -p 5044:5044 \</span><br><span class="line">    -p 15044:15044/udp \</span><br><span class="line">    -it --name elk sebp/elk</span><br></pre></td></tr></table></figure>
+
+<p>进入容器：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ docker <span class="built_in">exec</span> -it elk /bin/bash</span><br></pre></td></tr></table></figure>
+
+<p>运行以下命令设置 logstash 的 input 和 output：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># /opt/logstash/bin/logstash --path.data /tmp/logstash/data \</span></span><br><span class="line">  -e <span class="string">&#x27;input &#123; udp &#123; codec =&gt; &quot;json&quot; port =&gt; 15044 &#125; &#125; output &#123; elasticsearch &#123; hosts =&gt; [&quot;localhost&quot;] &#125; &#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+
+<p>这里我们启动一个 15044 的 UDP 端口，用来接收通过 UDP 发送到 Logstash 的日志。</p>
+<p>用浏览器打开 localhost:5601，如下所示：</p>
+<p><img src="/./assets/6.3.1.png"></p>
+<p>目前还没有指定 index（ElasticSearch 的 index 类似于 MySQL&#x2F;MongoDB 中的 database），即日志来源。下面我们尝试向 ELK 中写入一些日志。</p>
+<h2 id="6-3-2-使用-ELK"><a href="#6-3-2-使用-ELK" class="headerlink" title="6.3.2 使用 ELK"></a>6.3.2 使用 ELK</h2><p>这里仍然以使用 koa-await-breakpoint 为例，来演示如何将日志发送到 ELK。</p>
+<p><strong>app.js</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> koaAwaitBreakpoint = <span class="built_in">require</span>(<span class="string">&#x27;koa-await-breakpoint&#x27;</span>)(&#123;</span><br><span class="line">  <span class="attr">name</span>: <span class="string">&#x27;api&#x27;</span>,</span><br><span class="line">  <span class="attr">files</span>: [<span class="string">&#x27;./routes/*.js&#x27;</span>],</span><br><span class="line">  <span class="attr">store</span>: <span class="built_in">require</span>(<span class="string">&#x27;./logger&#x27;</span>)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">Paloma</span> = <span class="built_in">require</span>(<span class="string">&#x27;paloma&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> app = <span class="keyword">new</span> <span class="title class_">Paloma</span>()</span><br><span class="line"></span><br><span class="line">app.<span class="title function_">use</span>(koaAwaitBreakpoint)</span><br><span class="line">app.<span class="title function_">route</span>(&#123; <span class="attr">method</span>: <span class="string">&#x27;POST&#x27;</span>, <span class="attr">path</span>: <span class="string">&#x27;/users&#x27;</span>, <span class="attr">controller</span>: <span class="built_in">require</span>(<span class="string">&#x27;./routes/user&#x27;</span>).<span class="property">createUser</span> &#125;)</span><br><span class="line"></span><br><span class="line">app.<span class="title function_">listen</span>(<span class="number">3000</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>logger.js</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title class_">Logstash</span> = <span class="built_in">require</span>(<span class="string">&#x27;logstash-client&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> logstash = <span class="keyword">new</span> <span class="title class_">Logstash</span>(&#123;</span><br><span class="line">  <span class="attr">type</span>: <span class="string">&#x27;udp&#x27;</span>,</span><br><span class="line">  <span class="attr">host</span>: <span class="string">&#x27;localhost&#x27;</span>,</span><br><span class="line">  <span class="attr">port</span>: <span class="number">15044</span></span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="variable language_">module</span>.<span class="property">exports</span> = &#123;</span><br><span class="line">  save (log) &#123;</span><br><span class="line">    <span class="keyword">if</span> (log.<span class="property">error</span>) &#123;</span><br><span class="line">      log.<span class="property">errMsg</span> = log.<span class="property">error</span>.<span class="property">message</span></span><br><span class="line">      log.<span class="property">errStack</span> = log.<span class="property">error</span>.<span class="property">stack</span></span><br><span class="line">    &#125;</span><br><span class="line">    logstash.<span class="title function_">send</span>(log)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>routes&#x2F;user.js</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title class_">Mongolass</span> = <span class="built_in">require</span>(<span class="string">&#x27;mongolass&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> mongolass = <span class="keyword">new</span> <span class="title class_">Mongolass</span>(<span class="string">&#x27;mongodb://localhost:27017/test&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">User</span> = mongolass.<span class="title function_">model</span>(<span class="string">&#x27;User&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">Post</span> = mongolass.<span class="title function_">model</span>(<span class="string">&#x27;Post&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">Comment</span> = mongolass.<span class="title function_">model</span>(<span class="string">&#x27;Comment&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">exports</span>.<span class="property">createUser</span> = <span class="keyword">async</span> <span class="keyword">function</span> (<span class="params">ctx</span>) &#123;</span><br><span class="line">  <span class="keyword">const</span> name = ctx.<span class="property">query</span>.<span class="property">name</span> || <span class="string">&#x27;default&#x27;</span></span><br><span class="line">  <span class="keyword">const</span> age = +ctx.<span class="property">query</span>.<span class="property">age</span> || <span class="number">18</span></span><br><span class="line">  <span class="keyword">await</span> <span class="title function_">createUser</span>(name, age)</span><br><span class="line">  ctx.<span class="property">status</span> = <span class="number">204</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">createUser</span> (name, age) &#123;</span><br><span class="line">  <span class="keyword">const</span> user = (<span class="keyword">await</span> <span class="title class_">User</span>.<span class="title function_">create</span>(&#123;</span><br><span class="line">    name,</span><br><span class="line">    age</span><br><span class="line">  &#125;)).<span class="property">ops</span>[<span class="number">0</span>]</span><br><span class="line">  <span class="keyword">await</span> <span class="title function_">createPost</span>(user)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">createPost</span> (user) &#123;</span><br><span class="line">  <span class="keyword">const</span> post = (<span class="keyword">await</span> <span class="title class_">Post</span>.<span class="title function_">create</span>(&#123;</span><br><span class="line">    <span class="attr">uid</span>: user.<span class="property">_id</span>,</span><br><span class="line">    <span class="attr">title</span>: <span class="string">&#x27;post&#x27;</span>,</span><br><span class="line">    <span class="attr">content</span>: <span class="string">&#x27;post&#x27;</span></span><br><span class="line">  &#125;)).<span class="property">ops</span>[<span class="number">0</span>]</span><br><span class="line"></span><br><span class="line">  <span class="keyword">await</span> <span class="title function_">createComment</span>(user, post)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">createComment</span> (user, post) &#123;</span><br><span class="line">  <span class="keyword">await</span> <span class="title class_">Comment</span>.<span class="title function_">create</span>(&#123;</span><br><span class="line">    <span class="attr">userId</span>: user.<span class="property">_id</span>,</span><br><span class="line">    <span class="attr">postId</span>: post.<span class="property">_id</span>,</span><br><span class="line">    <span class="attr">content</span>: <span class="string">&#x27;comment&#x27;</span></span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ curl -XPOST localhost:3000/users</span><br></pre></td></tr></table></figure>
+
+<p>此时刷新 Kibana，如下所示：</p>
+<p><img src="/./assets/6.3.2.png"></p>
+<p>在初次使用 Kibana 时，需要配置 Kibana 从 ElasticSearch 的哪些 index 中搜索日志，我们在 <code>Index pattern</code> 处填 <code>logstash-*</code>，然后单击 Next step 按钮，在 <code>Time Filter field name</code> 中选择 timestamp，单击 Create index pattern 完成配置。</p>
+<p><strong>注意</strong>：我们选择 timestamp 而不是默认的 @timestamp，是因为在 koa-await-breakpoint 的日志中有 timestamp 字段。</p>
+<p>单击左侧目录的 Discover，我们发现已经有日志了。分别单击左侧出现的 Available Fields 的 fn、type、step、take，然后按 step 升序展示，如下所示：</p>
+<p><img src="/./assets/6.3.3.png"></p>
+<p>是不是一目了然！我们把每个请求的每一步的函数及其执行时间都记录下来了。</p>
+<p>修改 routes&#x2F;users.js 的 createComment，throw 一个 <code>new Error(&#39;test&#39;)</code>。重启程序并发起一个请求，ELK 显示如下：</p>
+<p><img src="/./assets/6.3.4.png"></p>
+<p><strong>小提示</strong>：在实际应用中会有非常多的日志，我们可以通过 requestId 找到一个请求的所有日志，在 7.2 小节会讲解。</p>
+<p>ELK 非常强大，基本能满足所有日志查询需求，Kibana 的查询使用 lucene 语法，用 10 分钟左右就能大体上手。Kibana 还能创建各种仪表盘和聚合图表，读者可自行尝试。</p>
+<h2 id="6-3-3-参考链接"><a href="#6-3-3-参考链接" class="headerlink" title="6.3.3 参考链接"></a>6.3.3 参考链接</h2><ul>
+<li><a target="_blank" rel="noopener" href="http://blog.51cto.com/baidu/1676798">http://blog.51cto.com/baidu/1676798</a></li>
+<li><a target="_blank" rel="noopener" href="http://elk-docker.readthedocs.io/">http://elk-docker.readthedocs.io</a></li>
+</ul>
+<p>上一节：<a target="_blank" rel="noopener" href="https://github.com/nswbmw/node-in-debugging/blob/master/6.2%20async_hooks.md">6.2 async_hooks</a></p>
+<p>下一节：<a target="_blank" rel="noopener" href="https://github.com/nswbmw/node-in-debugging/blob/master/6.4%20OpenTracing%20%2B%20Jaeger.md">6.4 OpenTracing + Jaeger</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Post author:  </strong>Marvin Liu
+  </li>
+  <li class="post-copyright-link">
+      <strong>Post link: </strong>
+      <a href="https://marvinliu1.github.io/2019/10/15/6.3%20ELK/" title="Node in Debugging - 6.3 ELK">https://marvinliu1.github.io/2019/10/15/6.3 ELK/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice:  </strong>All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/en" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> unless stating additionally.
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Node/" rel="tag"><i class="fa fa-tag"></i> Node</a>
+              <a href="/tags/Debugging/" rel="tag"><i class="fa fa-tag"></i> Debugging</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2019/10/28/6.4%20OpenTracing%20+%20Jaeger/" rel="prev" title="Node in Debugging - 6.4 OpenTracing + Jaeger">
+                  <i class="fa fa-chevron-left"></i> Node in Debugging - 6.4 OpenTracing + Jaeger
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2019/09/29/6.2%20async_hooks/" rel="next" title="Node in Debugging - 6.2 Async Hooks">
+                  Node in Debugging - 6.2 Async Hooks <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2018  
+  <!-- <span itemprop="copyrightYear">2022</span> -->
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Marvin Liu</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"appid":"qAsjmBkdw5m0pBHIrH2owQQT-MdYXbMMI","appkey":"xmNL8CNHrbd2QvJOzWwbj3ny","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>

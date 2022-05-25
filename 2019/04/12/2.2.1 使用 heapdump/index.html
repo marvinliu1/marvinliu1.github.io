@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#64CEAA"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#64CEAA">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" integrity="sha256-DfWjNxDkM94fVBWx1H5BMMp0Zq7luBlV8QRcSES7s+0=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"marvinliu1.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.11.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Node in Debugging heapdump 是一个 dump V8 堆信息的工具。v8-profiler 也包含了这个功能，这两个工具的原理都是一致的，都是 v8::Isolate::GetCurrent()-&gt;GetHeapProfiler()-&gt;TakeHeapSnapshot(title, control)，但是 heapdump 的使用简单些。下面我们以 heapdu">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Node in Debugging, 2.2 About heapdump">
+<meta property="og:url" content="https://marvinliu1.github.io/2019/04/12/2.2.1%20%E4%BD%BF%E7%94%A8%20heapdump/index.html">
+<meta property="og:site_name" content="Marvin&#39;s Blog">
+<meta property="og:description" content="Node in Debugging heapdump 是一个 dump V8 堆信息的工具。v8-profiler 也包含了这个功能，这两个工具的原理都是一致的，都是 v8::Isolate::GetCurrent()-&gt;GetHeapProfiler()-&gt;TakeHeapSnapshot(title, control)，但是 heapdump 的使用简单些。下面我们以 heapdu">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://github.com/nswbmw/node-in-debugging/raw/master/assets/2.2.1.png">
+<meta property="og:image" content="https://github.com/nswbmw/node-in-debugging/raw/master/assets/2.2.2.png">
+<meta property="og:image" content="https://github.com/nswbmw/node-in-debugging/raw/master/assets/2.2.3.png">
+<meta property="og:image" content="https://github.com/nswbmw/node-in-debugging/raw/master/assets/2.2.4.png">
+<meta property="article:published_time" content="2019-04-12T06:00:00.000Z">
+<meta property="article:modified_time" content="2022-05-25T04:23:07.031Z">
+<meta property="article:author" content="Marvin Liu">
+<meta property="article:tag" content="Node">
+<meta property="article:tag" content="Debugging">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://github.com/nswbmw/node-in-debugging/raw/master/assets/2.2.1.png">
+
+
+<link rel="canonical" href="https://marvinliu1.github.io/2019/04/12/2.2.1%20%E4%BD%BF%E7%94%A8%20heapdump/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://marvinliu1.github.io/2019/04/12/2.2.1%20%E4%BD%BF%E7%94%A8%20heapdump/","path":"2019/04/12/2.2.1 使用 heapdump/","title":"Node in Debugging, 2.2 About heapdump"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Node in Debugging, 2.2 About heapdump | Marvin's Blog</title>
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Marvin's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Marvin's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>links</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-1-%E4%BD%BF%E7%94%A8-heapdump"><span class="nav-number">1.</span> <span class="nav-text">2.2.1 使用 heapdump</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-2-Chrome-DevTools"><span class="nav-number">2.</span> <span class="nav-text">2.2.2 Chrome DevTools</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-3-%E5%AF%B9%E6%AF%94%E5%BF%AB%E7%85%A7"><span class="nav-number">3.</span> <span class="nav-text">2.2.3 对比快照</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-4-%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">4.</span> <span class="nav-text">2.2.4 参考链接</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Marvin Liu"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Marvin Liu</p>
+  <div class="site-description" itemprop="description">Take in the good!</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/marvinliu1" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;marvinliu1" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:liuyongquan2010@gmail.com" title="E-Mail → mailto:liuyongquan2010@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+<div style="color:white;">document.designMode='on'</div>
+
+        </div>
+      </div>
+    </div>
+    
+    <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+    <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+    <div class="widget-wrap">
+        <h3 class="widget-title">Tags</h3>
+        <div id="myCanvasContainer" class="widget tagcloud">
+            <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Debugging/" rel="tag">Debugging</a><span class="tag-list-count">30</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/" rel="tag">Hexo</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/" rel="tag">Javascript</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MarkDown/" rel="tag">MarkDown</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NeXt/" rel="tag">NeXt</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Next/" rel="tag">Next</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Node/" rel="tag">Node</a><span class="tag-list-count">30</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nuxt/" rel="tag">Nuxt</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vue/" rel="tag">Vue</a><span class="tag-list-count">3</span></li></ul>
+            </canvas>
+        </div>
+    </div>
+    
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/marvinliu1" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://marvinliu1.github.io/2019/04/12/2.2.1%20%E4%BD%BF%E7%94%A8%20heapdump/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Marvin Liu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Marvin's Blog">
+      <meta itemprop="description" content="Take in the good!">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Node in Debugging, 2.2 About heapdump | Marvin's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Node in Debugging, 2.2 About heapdump
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2019-04-12 00:00:00" itemprop="dateCreated datePublished" datetime="2019-04-12T00:00:00-06:00">2019-04-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Node-in-Debugging/" itemprop="url" rel="index"><span itemprop="name">Node in Debugging</span></a>
+        </span>
+    </span>
+
+  
+    <span id="/2019/04/12/2.2.1%20%E4%BD%BF%E7%94%A8%20heapdump/" class="post-meta-item leancloud_visitors" data-flag-title="Node in Debugging, 2.2 About heapdump" title="Views">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><a target="_blank" rel="noopener" href="https://github.com/nswbmw/node-in-debugging">Node in Debugging</a></p>
+<p><a target="_blank" rel="noopener" href="https://github.com/bnoordhuis/node-heapdump">heapdump</a> 是一个 dump V8 堆信息的工具。<a target="_blank" rel="noopener" href="https://github.com/node-inspector/v8-profiler">v8-profiler</a> 也包含了这个功能，这两个工具的原理都是一致的，都是 v8::Isolate::GetCurrent()-&gt;GetHeapProfiler()-&gt;TakeHeapSnapshot(title, control)，但是 heapdump 的使用简单些。下面我们以 heapdump 为例讲解如何分析 Node.js 的内存泄漏。</p>
+<h2 id="2-2-1-使用-heapdump"><a href="#2-2-1-使用-heapdump" class="headerlink" title="2.2.1 使用 heapdump"></a>2.2.1 使用 heapdump</h2><p>这里以一段经典的内存泄漏代码作为测试代码：</p>
+<p><strong>app.js</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">const heapdump = require(&#x27;heapdump&#x27;)</span><br><span class="line">let leakObject = null</span><br><span class="line">let count = 0</span><br><span class="line"></span><br><span class="line">setInterval(function testMemoryLeak() &#123;</span><br><span class="line">  const originLeakObject = leakObject</span><br><span class="line">  const unused = function () &#123;</span><br><span class="line">    if (originLeakObject) &#123;</span><br><span class="line">      console.log(&#x27;originLeakObject&#x27;)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  leakObject = &#123;</span><br><span class="line">    count: String(count++),</span><br><span class="line">    leakStr: new Array(1e7).join(&#x27;*&#x27;),</span><br><span class="line">    leakMethod: function () &#123;</span><br><span class="line">      console.log(&#x27;leakMessage&#x27;)</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;, 1000)</span><br></pre></td></tr></table></figure>
+
+<p>为什么这段程序会发生内存泄漏呢？首先我们要明白闭包的原理：<strong>同一个函数内部的闭包作用域只有一个，所有闭包共享。在执行函数的时候，如果遇到闭包，则会创建闭包作用域的内存空间，将该闭包所用到的局部变量添加进去，然后再遇到闭包时，会在之前创建好的作用域空间添加此闭包会用到而前闭包没用到的变量。函数结束时，会清除没有被闭包作用域引用的变量。</strong></p>
+<p><strong>这段代码内存泄露原因是</strong>：在 testMemoryLeak 函数内有两个闭包：unused 和 leakMethod。unused 这个闭包引用了父作用域中的 originLeakObject 变量，如果没有后面的 leakMethod，则会在函数结束后被清除，闭包作用域也跟着被清除了。因为后面的 leakObject 是全局变量，即 leakMethod 是全局变量，它引用的闭包作用域（包含了 unused 所引用的 originLeakObject）不会释放。而随着 testMemoryLeak 不断的调用，originLeakObject 指向前一次的 leakObject，下次的 leakObject.leakMethod 又会引用之前的 originLeakObject，从而形成一个闭包引用链，而 leakStr 是一个大字符串，得不到释放，从而造成了内存泄漏。</p>
+<p><strong>解决方法</strong>：在 testMemoryLeak 函数内部的最后添加 <code>originLeakObject = null</code> 即可。</p>
+<p>运行测试代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ node app</span><br></pre></td></tr></table></figure>
+
+<p>然后先后执行<strong>两</strong>次：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ kill -USR2 `pgrep -n node`</span><br></pre></td></tr></table></figure>
+
+<p>在当前目录下生成了两个 heapsnapshot 文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">heapdump-100427359.61348.heapsnapshot</span><br><span class="line">heapdump-100438986.797085.heapsnapshot</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-2-2-Chrome-DevTools"><a href="#2-2-2-Chrome-DevTools" class="headerlink" title="2.2.2 Chrome DevTools"></a>2.2.2 Chrome DevTools</h2><p>我们使用 Chrome DevTools 来分析前面生成的 heapsnapshot 文件。调出 Chrome DevTools -&gt; Memory -&gt; Load，按顺序依次加载前面生成的 heapsnapshot 文件。单击第 2 个堆快照，在左上角有个下拉菜单，有如下 4 个选项：</p>
+<ol>
+<li>Summary：以构造函数名分类显示。</li>
+<li>Comparison：比较多个快照之间的差异。</li>
+<li>Containment：查看整个 GC 路径。</li>
+<li>Statistics：以饼状图显示内存占用信息。</li>
+</ol>
+<p>通常我们只会用前两个选项；第 3 个选项一般用不到，因为在展开 Summary 和 Comparison 中的每一项时，都可以看到从 GC roots 到这个对象的路径；第 4 个选项只能看到内存占用比，如下图所示：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/nswbmw/node-in-debugging/blob/master/assets/2.2.1.png"><img src="https://github.com/nswbmw/node-in-debugging/raw/master/assets/2.2.1.png" alt="img"></a></p>
+<p>切换到 Summary 页，可以看到有如下 5 个属性：</p>
+<ol>
+<li>Contructor：构造函数名，例如 Object、Module、Socket，(array)、(string)、(regexp) 等加了括号的分别代表内置的 Array、String 和 Regexp。</li>
+<li>Distance：到 GC roots （GC 根对象）的距离。GC 根对象在浏览器中一般是 window 对象，在 Node.js 中是 global 对象，距离越大，则说明引用越深。</li>
+<li>Objects Count：对象个数。</li>
+<li>Shallow Size：对象自身的大小，不包括它引用的对象。</li>
+<li>Retained Size：对象自身的大小和它引用的对象的大小，即该对象被 GC 之后所能回收的内存大小。</li>
+</ol>
+<p><strong>小提示</strong>：一个对象的 Retained Size &#x3D; 该对象的 Shallow Size + 该对象支配树上其子节点的 Retained Size 之和。Shallow Size &#x3D;&#x3D; Retained Size 的有 (boolean)、(number)、(string)，它们无法引用其他值，并且始终是叶子节点。</p>
+<p>单击 Retained Size 选择降序展示，可以看到 (closure) 这一项引用的内容达到 98%，继续展开如下：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/nswbmw/node-in-debugging/blob/master/assets/2.2.2.png"><img src="https://github.com/nswbmw/node-in-debugging/raw/master/assets/2.2.2.png" alt="img"></a></p>
+<p><strong>可以看出</strong>：一个 leakStr 占了 8% 的内存，而 leakMethod 引用了 81% 的内存。对象保留树（Retainers，老版本 Chrome 中叫 Object’s retaining tree）展示了对象的 GC path，单击如上图中的 leakStr（Distance 是 13），Retainers 会自动展开，Distance 从 13 递减到 1。</p>
+<p>继续展开 leakMethod，如下所示：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/nswbmw/node-in-debugging/blob/master/assets/2.2.3.png"><img src="https://github.com/nswbmw/node-in-debugging/raw/master/assets/2.2.3.png" alt="img"></a></p>
+<p><strong>可以看出</strong>：有一个 count&#x3D;”10” 的 originLeakObject 的 leakMethod 函数的 context（即上下文） 引用了一个 count&#x3D;”9” 的 originLeakObject 对象，而这个 originLeakObject 对象的 leakMethod 函数的 context 又引用了 count&#x3D;”8” 的 originLeakObject 对象，以此类推。而每个 originLeakObject 对象上都有一个大字符串 leakStr（占用 8% 的内存），从而造成内存泄漏，符合我们之前的推断。</p>
+<p><strong>小提示</strong>：如果背景色是黄色的，则表示这个对象在 JavaScript 中还存在引用，所以可能没有被清除。如果背景色是红色的，则表示这个对象在 JavaScript 中不存在引用，但是依然存活在内存中，一般常见于 DOM 对象，它们存放的位置和 JavaScript 中的对象还是有不同的，在 Node.js 中很少遇见。</p>
+<h2 id="2-2-3-对比快照"><a href="#2-2-3-对比快照" class="headerlink" title="2.2.3 对比快照"></a>2.2.3 对比快照</h2><p>切换到 Comparison 视图下，可以看到 #New、#Deleted、#Delta 等属性，+ 和 - 表示相对于比较的堆快照而言。我们对比第 2 个快照和第 1 个快照，如下所示：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/nswbmw/node-in-debugging/blob/master/assets/2.2.4.png"><img src="https://github.com/nswbmw/node-in-debugging/raw/master/assets/2.2.4.png" alt="img"></a></p>
+<p><strong>可以看出</strong>：(string) 增加了 10 个，每个 string 大小为 10000024 字节。</p>
+<h2 id="2-2-4-参考链接"><a href="#2-2-4-参考链接" class="headerlink" title="2.2.4 参考链接"></a>2.2.4 参考链接</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://blog.meteor.com/an-interesting-kind-of-javascript-memory-leak-8b47d2e7f156">https://blog.meteor.com/an-interesting-kind-of-javascript-memory-leak-8b47d2e7f156</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.zhihu.com/question/56806069">https://www.zhihu.com/question/56806069</a></li>
+<li><a target="_blank" rel="noopener" href="http://taobaofed.org/blog/2016/04/15/how-to-find-memory-leak/">http://taobaofed.org/blog/2016/04/15/how-to-find-memory-leak/</a></li>
+<li><a target="_blank" rel="noopener" href="https://developers.google.com/web/tools/chrome-devtools/memory-problems/memory-101">https://developers.google.com/web/tools/chrome-devtools/memory-problems/memory-101</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Post author:  </strong>Marvin Liu
+  </li>
+  <li class="post-copyright-link">
+      <strong>Post link: </strong>
+      <a href="https://marvinliu1.github.io/2019/04/12/2.2.1%20%E4%BD%BF%E7%94%A8%20heapdump/" title="Node in Debugging, 2.2 About heapdump">https://marvinliu1.github.io/2019/04/12/2.2.1 使用 heapdump/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice:  </strong>All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/en" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> unless stating additionally.
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Node/" rel="tag"><i class="fa fa-tag"></i> Node</a>
+              <a href="/tags/Debugging/" rel="tag"><i class="fa fa-tag"></i> Debugging</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2019/04/13/2.3.1%20%E4%BD%BF%E7%94%A8%20memwatch-next/" rel="prev" title="Node in Debugging, 2.3 How to use memwatch-next">
+                  <i class="fa fa-chevron-left"></i> Node in Debugging, 2.3 How to use memwatch-next
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2019/04/07/2.1.1%20Core%20&%20Core%20Dump/" rel="next" title="Node in Debugging, 2.1 Core & Core Dump">
+                  Node in Debugging, 2.1 Core & Core Dump <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2018  
+  <!-- <span itemprop="copyrightYear">2022</span> -->
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Marvin Liu</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"appid":"qAsjmBkdw5m0pBHIrH2owQQT-MdYXbMMI","appkey":"xmNL8CNHrbd2QvJOzWwbj3ny","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>

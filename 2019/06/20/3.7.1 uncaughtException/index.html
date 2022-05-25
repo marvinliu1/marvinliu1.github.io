@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#64CEAA"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#64CEAA">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" integrity="sha256-DfWjNxDkM94fVBWx1H5BMMp0Zq7luBlV8QRcSES7s+0=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"marvinliu1.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.11.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Node in Debugging 相信所有 Node.js 开发者都对 TypeError: Cannot read property &#39;xxx&#39; of undefined&#x2F;null 这种错误并不陌生，这是因为期望从一个对象上获取 xxx 属性，结果这个对象的值是 undefined 或者 null。 3.7.1 uncaughtException看一段代码： 1234const">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Node in Debugging, 3.7 UncaughtException">
+<meta property="og:url" content="https://marvinliu1.github.io/2019/06/20/3.7.1%20uncaughtException/index.html">
+<meta property="og:site_name" content="Marvin&#39;s Blog">
+<meta property="og:description" content="Node in Debugging 相信所有 Node.js 开发者都对 TypeError: Cannot read property &#39;xxx&#39; of undefined&#x2F;null 这种错误并不陌生，这是因为期望从一个对象上获取 xxx 属性，结果这个对象的值是 undefined 或者 null。 3.7.1 uncaughtException看一段代码： 1234const">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://github.com/nswbmw/node-in-debugging/raw/master/assets/3.7.1.png">
+<meta property="article:published_time" content="2019-06-20T06:00:00.000Z">
+<meta property="article:modified_time" content="2022-05-25T04:23:06.703Z">
+<meta property="article:author" content="Marvin Liu">
+<meta property="article:tag" content="Node">
+<meta property="article:tag" content="Debugging">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://github.com/nswbmw/node-in-debugging/raw/master/assets/3.7.1.png">
+
+
+<link rel="canonical" href="https://marvinliu1.github.io/2019/06/20/3.7.1%20uncaughtException/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://marvinliu1.github.io/2019/06/20/3.7.1%20uncaughtException/","path":"2019/06/20/3.7.1 uncaughtException/","title":"Node in Debugging, 3.7 UncaughtException"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Node in Debugging, 3.7 UncaughtException | Marvin's Blog</title>
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Marvin's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Marvin's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>links</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-7-1-uncaughtException"><span class="nav-number">1.</span> <span class="nav-text">3.7.1 uncaughtException</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-7-2-llnode"><span class="nav-number">2.</span> <span class="nav-text">3.7.2 llnode</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-7-3-ReDoS"><span class="nav-number">3.</span> <span class="nav-text">3.7.3 ReDoS</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-7-4-%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">4.</span> <span class="nav-text">3.7.4 参考链接</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Marvin Liu"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Marvin Liu</p>
+  <div class="site-description" itemprop="description">Take in the good!</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/marvinliu1" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;marvinliu1" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:liuyongquan2010@gmail.com" title="E-Mail → mailto:liuyongquan2010@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+<div style="color:white;">document.designMode='on'</div>
+
+        </div>
+      </div>
+    </div>
+    
+    <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+    <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+    <div class="widget-wrap">
+        <h3 class="widget-title">Tags</h3>
+        <div id="myCanvasContainer" class="widget tagcloud">
+            <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Debugging/" rel="tag">Debugging</a><span class="tag-list-count">30</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/" rel="tag">Hexo</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/" rel="tag">Javascript</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MarkDown/" rel="tag">MarkDown</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NeXt/" rel="tag">NeXt</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Next/" rel="tag">Next</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Node/" rel="tag">Node</a><span class="tag-list-count">30</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nuxt/" rel="tag">Nuxt</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vue/" rel="tag">Vue</a><span class="tag-list-count">3</span></li></ul>
+            </canvas>
+        </div>
+    </div>
+    
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/marvinliu1" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://marvinliu1.github.io/2019/06/20/3.7.1%20uncaughtException/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Marvin Liu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Marvin's Blog">
+      <meta itemprop="description" content="Take in the good!">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Node in Debugging, 3.7 UncaughtException | Marvin's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Node in Debugging, 3.7 UncaughtException
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2019-06-20 00:00:00" itemprop="dateCreated datePublished" datetime="2019-06-20T00:00:00-06:00">2019-06-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Node-in-Debugging/" itemprop="url" rel="index"><span itemprop="name">Node in Debugging</span></a>
+        </span>
+    </span>
+
+  
+    <span id="/2019/06/20/3.7.1%20uncaughtException/" class="post-meta-item leancloud_visitors" data-flag-title="Node in Debugging, 3.7 UncaughtException" title="Views">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><a target="_blank" rel="noopener" href="https://github.com/nswbmw/node-in-debugging">Node in Debugging</a></p>
+<p>相信所有 Node.js 开发者都对 <code>TypeError: Cannot read property &#39;xxx&#39; of undefined/null</code> 这种错误并不陌生，这是因为期望从一个对象上获取 xxx 属性，结果这个对象的值是 undefined 或者 null。</p>
+<h2 id="3-7-1-uncaughtException"><a href="#3-7-1-uncaughtException" class="headerlink" title="3.7.1 uncaughtException"></a>3.7.1 uncaughtException</h2><p>看一段代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">const article = &#123; title: &#x27;Node.js&#x27;, content: &#x27;Hello, Node.js&#x27; &#125;</span><br><span class="line">setImmediate(() =&gt; &#123;</span><br><span class="line">  console.log(article.author.name)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>运行以上代码打印出：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">/Users/nswbmw/Desktop/test/app.js:3</span><br><span class="line">  console.log(article.author.name)</span><br><span class="line">                             ^</span><br><span class="line">TypeError: Cannot read property &#x27;name&#x27; of undefined</span><br><span class="line">    at Timeout.setInterval [as _onTimeout] (/Users/nswbmw/Desktop/test/app.js:3:30)</span><br><span class="line">    at ontimeout (timers.js:475:11)</span><br><span class="line">    at tryOnTimeout (timers.js:310:5)</span><br><span class="line">    at Timer.listOnTimeout (timers.js:270:5)</span><br></pre></td></tr></table></figure>
+
+<p>article 是一个文章对象有 title 和 content 属性，没有 author 属性，所以 article.author 是 undefined，调用 article.author.name 会报错。而且这个运行时错误是在一个异步函数（setImmediate）内抛出的，所以这个错误是一个 “uncaught exception”，如果没有 process.on(‘uncaughtException’, () &#x3D;&gt; {}) 事件监听器的话程序会 crash。</p>
+<p>调试这种错误没有比较好的方法，通常只能添加 console.log 打印出 article 的值。但是我们前面介绍过 llnode 的用法，是否可以使用 llnode 调试这类问题呢？答案是肯定的。</p>
+<h2 id="3-7-2-llnode"><a href="#3-7-2-llnode" class="headerlink" title="3.7.2 llnode"></a>3.7.2 llnode</h2><p>我们添加 –abort-on-uncaught-exception 参数重新运行程序，当程序 crash 的时候，会自动 Core Dump。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ ulimit -c unlimited</span><br><span class="line">$ node --abort-on-uncaught-exception app.js</span><br><span class="line">Uncaught TypeError: Cannot read property &#x27;name&#x27; of undefined</span><br><span class="line"></span><br><span class="line">FROM</span><br><span class="line">Immediate.setImmediate (/home/nswbmw/test/app.js:1:1)</span><br><span class="line">runCallback (timers.js:1:1)</span><br><span class="line">tryOnImmediate (timers.js:1:1)</span><br><span class="line">processImmediate [as _immediateCallback] (timers.js:1:1)</span><br><span class="line">Illegal instruction (core dumped)</span><br></pre></td></tr></table></figure>
+
+<p>此时生成一个 core 文件，我们使用 llnode 加载并诊断这个 core 文件。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ lldb-4.0 -c ./core</span><br><span class="line">(lldb) target create --core &quot;./core&quot;</span><br><span class="line">Core file &#x27;/home/nswbmw/test/./core&#x27; (x86_64) was loaded.</span><br><span class="line">(lldb)</span><br></pre></td></tr></table></figure>
+
+<p>使用 <code>v8 bt</code> 查看最近的 backtrace。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">(lldb) v8 bt</span><br><span class="line"> * thread #1: tid = 4750, 0x00007ffd905d5b39 node`v8::base::OS::Abort() + 9, name = &#x27;node&#x27;, stop reason = signal SIGILL</span><br><span class="line">  * frame #0: 0x00007ffd905d5b39 node`v8::base::OS::Abort() + 9</span><br><span class="line">    frame #1: 0x00007ffd900a4d19 node`v8::internal::Isolate::Throw(v8::internal::Object*, v8::internal::MessageLocation*) + 489</span><br><span class="line">    frame #2: 0x00007ffd9005e7f9 node`v8::internal::LoadIC::Load(v8::internal::Handle&lt;v8::internal::Object&gt;, v8::internal::Handle&lt;v8::internal::Name&gt;) + 569</span><br><span class="line">    frame #3: 0x00007ffd9005f759 node`v8::internal::Runtime_LoadIC_Miss(int, v8::internal::Object**, v8::internal::Isolate*) + 633</span><br><span class="line">    frame #4: 0x000018e6e710463d &lt;exit&gt;</span><br><span class="line">    frame #5: 0x000018e6e71ecce4 &lt;stub&gt;</span><br><span class="line">    frame #6: 0x000018e6e71bf9ce setImmediate(this=0x0000154a3ae09429:&lt;Object: Immediate&gt;) at /home/nswbmw/test/app.js:2:14 fn=0x0000154a3ae09281</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<p><strong>可以看出</strong>：在 frame #4 处程序触发 exit，往上追溯到 frame #6 有一个 setImmediate 抛出了错误，在 app.js 第 2 行，符合打印出的错误信息。setImmediate 的回调函数的地址为 0x0000154a3ae09281，我们使用 <code>v8 i</code> 检索这个函数。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">(lldb) v8 i 0x0000154a3ae09281</span><br><span class="line">0x0000154a3ae09281:&lt;function: setImmediate at /home/nswbmw/test/app.js:2:14</span><br><span class="line">  context=0x0000154a3ae09199&#123;</span><br><span class="line">    (previous)=0x000017849b703d89</span><br><span class="line">    (closure)=0x0000154a3ae08d81 &#123;&lt;function: (anonymous) at /home/nswbmw/test/app.js:1:10&gt;&#125;,</span><br><span class="line">    article=0x0000154a3ae091d1:&lt;Object: Object&gt;&#125;&gt;</span><br><span class="line">(lldb) v8 i 0x0000154a3ae091d1</span><br><span class="line">0x0000154a3ae091d1:&lt;Object: Object properties &#123;</span><br><span class="line">    .title=0x000014117e04c9e9:&lt;String: &quot;Node.js&quot;&gt;,</span><br><span class="line">    .content=0x000014117e04ca09:&lt;String: &quot;Hello, Node.js&quot;&gt;&#125;&gt;</span><br></pre></td></tr></table></figure>
+
+<p>setImmediate 函数内有一个 article 对象，然后我们继续通过 <code>v8 i</code> 检索得知 article 的值为 { title: “Node.js”, content: “Hello, Node.js” }，并没有 author 属性，真相大白。</p>
+<h2 id="3-7-3-ReDoS"><a href="#3-7-3-ReDoS" class="headerlink" title="3.7.3 ReDoS"></a>3.7.3 ReDoS</h2><p>DoS（Denial of Service）全称是拒绝服务攻击，ReDoS（RegExp Denial of Service）即是正则表达式拒绝服务攻击。ReDoS 是由于正则表达式写得有缺陷，所以使用正则匹配时，会出现大量占用 CPU 的情况，导致服务不可用，而导致正则表达式匹配 “卡住” 的原因正是正则表达式的 “回溯” 特性。</p>
+<p>看一个简单的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/a.*b/g.test(&#x27;aaaf&#x27;)</span><br></pre></td></tr></table></figure>
+
+<p>匹配过程如下：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/nswbmw/node-in-debugging/blob/master/assets/3.7.1.png"><img src="https://github.com/nswbmw/node-in-debugging/raw/master/assets/3.7.1.png" alt="img"></a></p>
+<p><strong>可以看出</strong>：因为 * 是贪婪匹配，所以第 3 步 <code>.*</code> 匹配了字符串末尾，由于剩下一个 <code>b</code> 无法匹配所以 “吐” 出一个字符再尝试匹配（第 4 步），仍然不匹配（第 5 步），继续 “吐” 出一个字符…这个 “吐” 一个字符的过程就是回溯（backtrack）。</p>
+<p>再看个例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">const reg = /(a*)+b/</span><br><span class="line"></span><br><span class="line">console.time(&#x27;reg&#x27;)</span><br><span class="line">reg.test(&#x27;aaaaaaaaaaaaaaaaaaaaaaaaaaaf&#x27;) // reg: 2572.022ms</span><br><span class="line">// reg.test(&#x27;aaaaaaaaaaaaaaaaaaaaaaaaaaaf&#x27;) // reg: 5048.735ms</span><br><span class="line">// reg.test(&#x27;aaaaaaaaaaaaaaaaaaaaaaaaaaaf&#x27;) // reg: 10710.070ms</span><br><span class="line">console.timeEnd(&#x27;reg&#x27;)</span><br></pre></td></tr></table></figure>
+
+<p>运行以上代码，每添加一个字母 a，程序的运行时间就翻倍，这正是由于正则表达式的回溯导致的，这个正则表达式的时间复杂度为 O(2^n)。</p>
+<p>平时写出具有回溯的正则表达式是比较常见的，这个时候程序会 “卡住”，使用 llnode 也可以调试这类问题。</p>
+<p>运行以下代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ echo &quot;/(a*)+b/.test(&#x27;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaf&#x27;)&quot; &gt; app.js</span><br><span class="line">$ node --abort-on-uncaught-exception app.js &amp;</span><br><span class="line">$ kill -BUS `pgrep -n node`</span><br></pre></td></tr></table></figure>
+
+<p>生成 core 文件，使用 llnode 调试。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ lldb-4.0 -c ./core</span><br><span class="line">(lldb) target create --core &quot;./core&quot;</span><br><span class="line">Core file &#x27;/home/nswbmw/test/./core&#x27; (x86_64) was loaded.</span><br><span class="line">(lldb) v8 bt</span><br><span class="line"> * thread #1: tid = 5381, 0x000036a6db804f6b, name = &#x27;node&#x27;, stop reason = signal SIGBUS</span><br><span class="line">  * frame #0: 0x000036a6db804f6b &lt;builtin&gt;</span><br><span class="line">    ...</span><br><span class="line">    frame #6: 0x000036a6db68463d &lt;exit&gt;</span><br><span class="line">    frame #7: 0x000036a6db7135f4 test(this=0x0000038344709119:&lt;JSRegExp source=/(a*)+b/&gt;, 0x0000098ccdb4c9e9:&lt;String: &quot;aaaaaaaaaaaaaaaa...&quot;&gt;) at (no script) fn=0x0000183ca0c134a1</span><br><span class="line">    ...</span><br><span class="line">(lldb) v8 i -F 0x0000098ccdb4c9e9</span><br><span class="line">0x0000098ccdb4c9e9:&lt;String: &quot;aaaaaaaaaaaaaaaaaaaaaaaaaaaaaf&quot;&gt;</span><br></pre></td></tr></table></figure>
+
+<p><strong>可以看出</strong>：在程序退出前，程序在执行一个正则表达式（<code>/(a*)+b/</code>）的 test 方法，参数是字符串(<code>aaaaaaaaaaaaaaaaaaaaaaaaaaaaaf</code>)。</p>
+<p>减少正则表达式回溯的简单方法就是合并不必要的量词，如将上面的正则表达式 <code>/(a*)+b/</code> 修改为 <code>/a*b/</code>。</p>
+<h2 id="3-7-4-参考链接"><a href="#3-7-4-参考链接" class="headerlink" title="3.7.4 参考链接"></a>3.7.4 参考链接</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://www.rawidn.com/posts/ddos-and-ddos-in-regular-expression.html">https://www.rawidn.com/posts/ddos-and-ddos-in-regular-expression.html</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Post author:  </strong>Marvin Liu
+  </li>
+  <li class="post-copyright-link">
+      <strong>Post link: </strong>
+      <a href="https://marvinliu1.github.io/2019/06/20/3.7.1%20uncaughtException/" title="Node in Debugging, 3.7 UncaughtException">https://marvinliu1.github.io/2019/06/20/3.7.1 uncaughtException/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice:  </strong>All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/en" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> unless stating additionally.
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Node/" rel="tag"><i class="fa fa-tag"></i> Node</a>
+              <a href="/tags/Debugging/" rel="tag"><i class="fa fa-tag"></i> Debugging</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2019/06/21/Adding-tag-cloud/" rel="prev" title="Adding Tag-Cloud">
+                  <i class="fa fa-chevron-left"></i> Adding Tag-Cloud
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2019/05/28/3.6.1%20%E4%BB%80%E4%B9%88%E6%98%AF%20Event%20Loop%EF%BC%9F/" rel="next" title="Node in Debugging, 3.6 What is event loop?">
+                  Node in Debugging, 3.6 What is event loop? <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2018  
+  <!-- <span itemprop="copyrightYear">2022</span> -->
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Marvin Liu</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"appid":"qAsjmBkdw5m0pBHIrH2owQQT-MdYXbMMI","appkey":"xmNL8CNHrbd2QvJOzWwbj3ny","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>

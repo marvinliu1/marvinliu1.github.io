@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#64CEAA"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#64CEAA">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" integrity="sha256-DfWjNxDkM94fVBWx1H5BMMp0Zq7luBlV8QRcSES7s+0=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"marvinliu1.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.11.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Node in Debugging 事件循环（Event Loop）是 Node.js 最核心的概念，所以理解 Event Loop 如何运作对于写出正确的代码和调试是非常重要的。比如考虑以下代码： 1234setTimeout(() &#x3D;&gt; &amp;#123;  console.log(&amp;#x27;hi&amp;#x27;)&amp;#125;, 1000)...  我们期望程序运行 1s 后打印出 hi，但是实">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Node in Debugging, 3.6 What is event loop?">
+<meta property="og:url" content="https://marvinliu1.github.io/2019/05/28/3.6.1%20%E4%BB%80%E4%B9%88%E6%98%AF%20Event%20Loop%EF%BC%9F/index.html">
+<meta property="og:site_name" content="Marvin&#39;s Blog">
+<meta property="og:description" content="Node in Debugging 事件循环（Event Loop）是 Node.js 最核心的概念，所以理解 Event Loop 如何运作对于写出正确的代码和调试是非常重要的。比如考虑以下代码： 1234setTimeout(() &#x3D;&gt; &amp;#123;  console.log(&amp;#x27;hi&amp;#x27;)&amp;#125;, 1000)...  我们期望程序运行 1s 后打印出 hi，但是实">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://github.com/nswbmw/node-in-debugging/raw/master/assets/3.6.1.png">
+<meta property="article:published_time" content="2019-05-28T06:00:00.000Z">
+<meta property="article:modified_time" content="2022-05-25T04:23:06.983Z">
+<meta property="article:author" content="Marvin Liu">
+<meta property="article:tag" content="Node">
+<meta property="article:tag" content="Debugging">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://github.com/nswbmw/node-in-debugging/raw/master/assets/3.6.1.png">
+
+
+<link rel="canonical" href="https://marvinliu1.github.io/2019/05/28/3.6.1%20%E4%BB%80%E4%B9%88%E6%98%AF%20Event%20Loop%EF%BC%9F/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://marvinliu1.github.io/2019/05/28/3.6.1%20%E4%BB%80%E4%B9%88%E6%98%AF%20Event%20Loop%EF%BC%9F/","path":"2019/05/28/3.6.1 什么是 Event Loop？/","title":"Node in Debugging, 3.6 What is event loop?"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Node in Debugging, 3.6 What is event loop? | Marvin's Blog</title>
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Marvin's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Marvin's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>links</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-6-1-%E4%BB%80%E4%B9%88%E6%98%AF-Event-Loop%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">3.6.1 什么是 Event Loop？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-6-2-poll-%E9%98%B6%E6%AE%B5"><span class="nav-number">2.</span> <span class="nav-text">3.6.2 poll 阶段</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-6-3-process-nextTick"><span class="nav-number">3.</span> <span class="nav-text">3.6.3 process.nextTick()</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-6-4-%E5%85%AD%E9%81%93%E9%A2%98"><span class="nav-number">4.</span> <span class="nav-text">3.6.4 六道题</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE%E4%B8%80"><span class="nav-number">4.1.</span> <span class="nav-text">题目一</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE%E4%BA%8C"><span class="nav-number">4.2.</span> <span class="nav-text">题目二</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE%E4%B8%89"><span class="nav-number">4.3.</span> <span class="nav-text">题目三</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE%E5%9B%9B"><span class="nav-number">4.4.</span> <span class="nav-text">题目四</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE%E4%BA%94"><span class="nav-number">4.5.</span> <span class="nav-text">题目五</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%A2%98%E7%9B%AE%E5%85%AD"><span class="nav-number">4.6.</span> <span class="nav-text">题目六</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-6-5-%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">5.</span> <span class="nav-text">3.6.5 参考链接</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Marvin Liu"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Marvin Liu</p>
+  <div class="site-description" itemprop="description">Take in the good!</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/marvinliu1" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;marvinliu1" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:liuyongquan2010@gmail.com" title="E-Mail → mailto:liuyongquan2010@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+<div style="color:white;">document.designMode='on'</div>
+
+        </div>
+      </div>
+    </div>
+    
+    <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+    <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+    <div class="widget-wrap">
+        <h3 class="widget-title">Tags</h3>
+        <div id="myCanvasContainer" class="widget tagcloud">
+            <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Debugging/" rel="tag">Debugging</a><span class="tag-list-count">30</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/" rel="tag">Hexo</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/" rel="tag">Javascript</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MarkDown/" rel="tag">MarkDown</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NeXt/" rel="tag">NeXt</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Next/" rel="tag">Next</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Node/" rel="tag">Node</a><span class="tag-list-count">30</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nuxt/" rel="tag">Nuxt</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vue/" rel="tag">Vue</a><span class="tag-list-count">3</span></li></ul>
+            </canvas>
+        </div>
+    </div>
+    
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/marvinliu1" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://marvinliu1.github.io/2019/05/28/3.6.1%20%E4%BB%80%E4%B9%88%E6%98%AF%20Event%20Loop%EF%BC%9F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Marvin Liu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Marvin's Blog">
+      <meta itemprop="description" content="Take in the good!">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Node in Debugging, 3.6 What is event loop? | Marvin's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Node in Debugging, 3.6 What is event loop?
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2019-05-28 00:00:00" itemprop="dateCreated datePublished" datetime="2019-05-28T00:00:00-06:00">2019-05-28</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Node-in-Debugging/" itemprop="url" rel="index"><span itemprop="name">Node in Debugging</span></a>
+        </span>
+    </span>
+
+  
+    <span id="/2019/05/28/3.6.1%20%E4%BB%80%E4%B9%88%E6%98%AF%20Event%20Loop%EF%BC%9F/" class="post-meta-item leancloud_visitors" data-flag-title="Node in Debugging, 3.6 What is event loop?" title="Views">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><a target="_blank" rel="noopener" href="https://github.com/nswbmw/node-in-debugging">Node in Debugging</a></p>
+<p>事件循环（Event Loop）是 Node.js 最核心的概念，所以理解 Event Loop 如何运作对于写出正确的代码和调试是非常重要的。比如考虑以下代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">setTimeout(() =&gt; &#123;</span><br><span class="line">  console.log(&#x27;hi&#x27;)</span><br><span class="line">&#125;, 1000)</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>我们期望程序运行 1s 后打印出 hi，但是实际情况可能是远大于 1s 后才打印出 hi。这个时候如果理解 Event Loop 就可以轻易发现问题，否则任凭怎么调试都是发现不了问题的。</p>
+<h2 id="3-6-1-什么是-Event-Loop？"><a href="#3-6-1-什么是-Event-Loop？" class="headerlink" title="3.6.1 什么是 Event Loop？"></a>3.6.1 什么是 Event Loop？</h2><p>Event Loop 可以简单理解为：</p>
+<ol>
+<li>所有任务都在主线程上执行，形成一个执行栈（Execution Context Stack）。</li>
+<li>主线程之外，还存在一个 “任务队列”（Task Queue）。系统把异步任务放到 “任务队列” 之中，然后主线程继续执行后续的任务。</li>
+<li>一旦 “执行栈” 中的所有任务执行完毕，系统就会读取 “任务队列”。如果这个时候，异步任务已经结束了等待状态，就会从 “任务队列” 进入执行栈，恢复执行。</li>
+<li>主线程不断重复上面的第三步。</li>
+</ol>
+<p><strong>小提示</strong>：我们常说 Node.js 是单线程的，但为何能达到高并发呢？原因就在于底层的 Libuv 维护一个 I&#x2F;O 线程池（即上述的 “任务队列”），结合 Node.js 异步 I&#x2F;O 的特性，单线程也能达到高并发啦。</p>
+<p>上面提到了 “读取任务队列”，这样讲有点笼统，其实 Event Loop 的 “读取任务队列” 有 6 个阶段，如下所示：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">   ┌───────────────────────┐</span><br><span class="line">┌─&gt;│        timers         │</span><br><span class="line">│  └──────────┬────────────┘</span><br><span class="line">│  ┌──────────┴────────────┐</span><br><span class="line">│  │     I/O callbacks     │</span><br><span class="line">│  └──────────┬────────────┘</span><br><span class="line">│  ┌──────────┴────────────┐</span><br><span class="line">│  │     idle, prepare     │</span><br><span class="line">│  └──────────┬────────────┘      ┌───────────────┐</span><br><span class="line">│  ┌──────────┴────────────┐      │   incoming:   │</span><br><span class="line">│  │         poll          │&lt;─────┤  connections, │</span><br><span class="line">│  └──────────┬────────────┘      │   data, etc.  │</span><br><span class="line">│  ┌──────────┴────────────┐      └───────────────┘</span><br><span class="line">│  │        check          │</span><br><span class="line">│  └──────────┬────────────┘</span><br><span class="line">│  ┌──────────┴────────────┐</span><br><span class="line">└──┤    close callbacks    │</span><br><span class="line">   └───────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p>每个阶段都有一个 <strong>FIFO</strong> 的回调队列（queue），当 Event Loop 执行到这个阶段时，会从当前阶段的队列里拿出一个任务放到栈中执行，当队列任务清空，或者执行的回调数量达到上限后，Event Loop 会进入下个阶段。</p>
+<p>每个阶段（phase）的作用：</p>
+<ul>
+<li>timers：执行 setTimeout() 和 setInterval() 中到期的 callback。</li>
+<li>I&#x2F;O callbacks：上一轮循环中有少数的 I&#x2F;O callback 会被延迟到这一轮的这一阶段执行。</li>
+<li>idle, prepare：仅内部使用。</li>
+<li>poll：最重要的阶段，执行 I&#x2F;O callback，在适当的条件下 node 会阻塞在这个阶段。</li>
+<li>check：执行 setImmediate() 的 callback。</li>
+<li>close callbacks：执行 close 事件的 callback，例如 socket.on(‘close’,func)。</li>
+</ul>
+<h2 id="3-6-2-poll-阶段"><a href="#3-6-2-poll-阶段" class="headerlink" title="3.6.2 poll 阶段"></a>3.6.2 poll 阶段</h2><p>poll 阶段主要有两个功能：</p>
+<ol>
+<li>当 timers 的定时器到期后，执行定时器（setTimeout 和 setInterval）的 callback。</li>
+<li>执行 poll 队列里面的 I&#x2F;O callback。</li>
+</ol>
+<p>如果 Event Loop 进入了 poll 阶段，且代码未设定 timer，可能发生以下情况：</p>
+<ul>
+<li>如果 poll queue 不为空，Event Loop 将同步的执行 queue 里的 callback，直至 queue 为空，或者执行的 callback 到达系统上限。</li>
+<li>如果 poll queue 为空，可能发生以下情况：<ul>
+<li>如果代码使用 setImmediate() 设定了 callback，Event Loop 将结束 poll 阶段进入 check 阶段，并执行 check 阶段的 queue。</li>
+<li>如果代码没有使用 setImmediate()，Event Loop 将阻塞在该阶段等待 callbacks 加入 poll queue，如果有 callback 进来则立即执行。</li>
+</ul>
+</li>
+</ul>
+<p>一旦 poll queue 为空，Event Loop 将检查 timers，如果有 timer 的时间到期，Event Loop 将回到 timers 阶段，然后执行 timer queue。</p>
+<h2 id="3-6-3-process-nextTick"><a href="#3-6-3-process-nextTick" class="headerlink" title="3.6.3 process.nextTick()"></a>3.6.3 process.nextTick()</h2><p>上面的 6 个阶段并没有出现 process.nextTick()，process.nextTick() 不在 Event Loop 的任何阶段执行，而是在各个阶段切换的中间执行，即从一个阶段切换到下个阶段前执行。这里还需要提一下 macrotask 和 microtask 的概念，macrotask（宏任务）指 Event Loop 每个阶段执行的任务，microtask（微任务）指每个阶段之间执行的任务。即上述 6 个阶段都属于 macrotask，process.nextTick() 属于 microtask。</p>
+<p><strong>小提示</strong>：process.nextTick() 的实现和 v8 的 microtask 并无关系，是 Node.js 层面的东西，应该说 process.nextTick() 的行为接近为 microtask。Promise.then 也属于 microtask 的一种。</p>
+<p>最后，放出一张关于 Event Loop 非常直观的图：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/nswbmw/node-in-debugging/blob/master/assets/3.6.1.png"><img src="https://github.com/nswbmw/node-in-debugging/raw/master/assets/3.6.1.png" alt="img"></a></p>
+<p>绿色小块表示 Event Loop 的各个阶段，执行的是 macrotask，macrotask 中间的粉红箭头表示执行的是 microtask。</p>
+<h2 id="3-6-4-六道题"><a href="#3-6-4-六道题" class="headerlink" title="3.6.4 六道题"></a>3.6.4 六道题</h2><p>下面我们以六道题巩固一下前面讲到的 Event Loop 的知识。</p>
+<h3 id="题目一"><a href="#题目一" class="headerlink" title="题目一"></a>题目一</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">setTimeout(() =&gt; &#123;</span><br><span class="line">  console.log(&#x27;setTimeout&#x27;)</span><br><span class="line">&#125;, 0)</span><br><span class="line"></span><br><span class="line">setImmediate(() =&gt; &#123;</span><br><span class="line">  console.log(&#x27;setImmediate&#x27;)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">setImmediate</span><br><span class="line">setTimeout</span><br></pre></td></tr></table></figure>
+
+<p>或者：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">setTimeout</span><br><span class="line">setImmediate</span><br></pre></td></tr></table></figure>
+
+<p>为什么结果不确定呢？</p>
+<p><strong>解释</strong>：setTimeout&#x2F;setInterval 的第 2 个参数取值范围是：[1, 2^31 - 1]，如果超过这个范围则会初始化为 1，即 setTimeout(fn, 0) &#x3D;&#x3D;&#x3D; setTimeout(fn, 1)。我们知道 setTimeout 的回调函数在 timer 阶段执行，setImmediate 的回调函数在 check 阶段执行，event loop 的开始会先检查 timer 阶段，但是在开始之前到 timer 阶段会消耗一定时间，所以就会出现两种情况：</p>
+<ol>
+<li>timer 前的准备时间超过 1ms，满足 loop-&gt;time &gt;&#x3D; 1，则执行 timer 阶段（setTimeout）的回调函数。</li>
+<li>timer 前的准备时间小于 1ms，则先执行 check 阶段（setImmediate）的回调函数，下一次 event loop 执行 timer 阶段（setTimeout）的回调函数。</li>
+</ol>
+<p>再看个例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">setTimeout(() =&gt; &#123;</span><br><span class="line">  console.log(&#x27;setTimeout&#x27;)</span><br><span class="line">&#125;, 0)</span><br><span class="line"></span><br><span class="line">setImmediate(() =&gt; &#123;</span><br><span class="line">  console.log(&#x27;setImmediate&#x27;)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">const start = Date.now()</span><br><span class="line">while (Date.now() - start &lt; 10);</span><br></pre></td></tr></table></figure>
+
+<p>运行结果一定是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">setTimeout</span><br><span class="line">setImmediate</span><br></pre></td></tr></table></figure>
+
+<h3 id="题目二"><a href="#题目二" class="headerlink" title="题目二"></a>题目二</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">const fs = require(&#x27;fs&#x27;)</span><br><span class="line"></span><br><span class="line">fs.readFile(__filename, () =&gt; &#123;</span><br><span class="line">  setTimeout(() =&gt; &#123;</span><br><span class="line">    console.log(&#x27;setTimeout&#x27;)</span><br><span class="line">  &#125;, 0)</span><br><span class="line"></span><br><span class="line">  setImmediate(() =&gt; &#123;</span><br><span class="line">    console.log(&#x27;setImmediate&#x27;)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">setImmediate</span><br><span class="line">setTimeout</span><br></pre></td></tr></table></figure>
+
+<p><strong>解释</strong>：fs.readFile 的回调函数执行完后：</p>
+<ol>
+<li>注册 setTimeout 的回调函数到 timer 阶段。</li>
+<li>注册 setImmediate 的回调函数到 check 阶段。</li>
+<li>event loop 从 pool 阶段出来继续往下一个阶段执行，恰好是 check 阶段，所以 setImmediate 的回调函数先执行。</li>
+<li>本次 event loop 结束后，进入下一次 event loop，执行 setTimeout 的回调函数。</li>
+</ol>
+<p>所以，在 I&#x2F;O Callbacks 中注册的 setTimeout 和 setImmediate，永远都是 setImmediate 先执行。</p>
+<h3 id="题目三"><a href="#题目三" class="headerlink" title="题目三"></a>题目三</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">setInterval(() =&gt; &#123;</span><br><span class="line">  console.log(&#x27;setInterval&#x27;)</span><br><span class="line">&#125;, 100)</span><br><span class="line"></span><br><span class="line">process.nextTick(function tick () &#123;</span><br><span class="line">  process.nextTick(tick)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：setInterval 永远不会打印出来。</p>
+<p><strong>解释</strong>：process.nextTick 会无限循环，将 event loop 阻塞在 microtask 阶段，导致 event loop 上其他 macrotask 阶段的回调函数没有机会执行。</p>
+<p>解决方法通常是用 setImmediate 替代 process.nextTick，如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">setInterval(() =&gt; &#123;</span><br><span class="line">  console.log(&#x27;setInterval&#x27;)</span><br><span class="line">&#125;, 100)</span><br><span class="line"></span><br><span class="line">setImmediate(function immediate () &#123;</span><br><span class="line">  setImmediate(immediate)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：每 100ms 打印一次 setInterval。</p>
+<p><strong>解释</strong>：process.nextTick 内执行 process.nextTick 仍然将 tick 函数注册到当前 microtask 的尾部，所以导致 microtask 永远执行不完； setImmediate 内执行 setImmediate 会将 immediate 函数注册到下一次 event loop 的 check 阶段，而不是当前正在执行的 check 阶段，所以给了 event loop 上其他 macrotask 执行的机会。</p>
+<p>再看个例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">setImmediate(() =&gt; &#123;</span><br><span class="line">  console.log(&#x27;setImmediate1&#x27;)</span><br><span class="line">  setImmediate(() =&gt; &#123;</span><br><span class="line">    console.log(&#x27;setImmediate2&#x27;)</span><br><span class="line">  &#125;)</span><br><span class="line">  process.nextTick(() =&gt; &#123;</span><br><span class="line">    console.log(&#x27;nextTick&#x27;)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">setImmediate(() =&gt; &#123;</span><br><span class="line">  console.log(&#x27;setImmediate3&#x27;)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">setImmediate1</span><br><span class="line">setImmediate3</span><br><span class="line">nextTick</span><br><span class="line">setImmediate2</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意</strong>：并不是说 setImmediate 可以完全代替 process.nextTick，process.nextTick 在特定场景下还是无法被代替的，比如我们就想将一些操作放到最近的 microtask 里执行。</p>
+<h3 id="题目四"><a href="#题目四" class="headerlink" title="题目四"></a>题目四</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">const promise = Promise.resolve()</span><br><span class="line">  .then(() =&gt; &#123;</span><br><span class="line">    return promise</span><br><span class="line">  &#125;)</span><br><span class="line">promise.catch(console.error)</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">TypeError: Chaining cycle detected for promise #&lt;Promise&gt;</span><br><span class="line">    at &lt;anonymous&gt;</span><br><span class="line">    at process._tickCallback (internal/process/next_tick.js:188:7)</span><br><span class="line">    at Function.Module.runMain (module.js:667:11)</span><br><span class="line">    at startup (bootstrap_node.js:187:16)</span><br><span class="line">    at bootstrap_node.js:607:3</span><br></pre></td></tr></table></figure>
+
+<p><strong>解释</strong>：Promise A+ 的规范里规定 promise 不能返回自己。仔细想想，即使规范里不规定，promise.then 类似于 process.nextTick，都会将回调函数注册到 microtask 阶段。上面代码也会导致死循环，类似前面提到的：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">process.nextTick(function tick () &#123;</span><br><span class="line">  process.nextTick(tick)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>再看个例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">const promise = Promise.resolve()</span><br><span class="line"></span><br><span class="line">promise.then(() =&gt; &#123;</span><br><span class="line">  console.log(&#x27;promise&#x27;)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">process.nextTick(() =&gt; &#123;</span><br><span class="line">  console.log(&#x27;nextTick&#x27;)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nextTick</span><br><span class="line">promise</span><br></pre></td></tr></table></figure>
+
+<p><strong>解释</strong>：promise.then 虽然和 process.nextTick 一样，都将回调函数注册到 microtask，但优先级不一样。process.nextTick 的 microtask queue 总是优先于 promise 的 microtask queue 执行。</p>
+<h3 id="题目五"><a href="#题目五" class="headerlink" title="题目五"></a>题目五</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">setTimeout(() =&gt; &#123;</span><br><span class="line">  console.log(1)</span><br><span class="line">&#125;, 0)</span><br><span class="line">new Promise((resolve, reject) =&gt; &#123;</span><br><span class="line">  console.log(2)</span><br><span class="line">  for (let i = 0; i &lt; 10000; i++) &#123;</span><br><span class="line">    i === 9999 &amp;&amp; resolve()</span><br><span class="line">  &#125;</span><br><span class="line">  console.log(3)</span><br><span class="line">&#125;).then(() =&gt; &#123;</span><br><span class="line">  console.log(4)</span><br><span class="line">&#125;)</span><br><span class="line">console.log(5)</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">2</span><br><span class="line">3</span><br><span class="line">5</span><br><span class="line">4</span><br><span class="line">1</span><br></pre></td></tr></table></figure>
+
+<p><strong>解释</strong>：Promise 构造函数是同步执行的，所以先打印 2、3，然后打印 5，接下来 event loop 进入执行 microtask 阶段，执行 promise.then 的回调函数打印出 4，然后执行下一个 macrotask，恰好是 timer 阶段的 setTimeout 的回调函数，打印出 1。</p>
+<h3 id="题目六"><a href="#题目六" class="headerlink" title="题目六"></a>题目六</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">setImmediate(() =&gt; &#123;</span><br><span class="line">  console.log(1)</span><br><span class="line">  setTimeout(() =&gt; &#123;</span><br><span class="line">    console.log(2)</span><br><span class="line">  &#125;, 100)</span><br><span class="line">  setImmediate(() =&gt; &#123;</span><br><span class="line">    console.log(3)</span><br><span class="line">  &#125;)</span><br><span class="line">  process.nextTick(() =&gt; &#123;</span><br><span class="line">    console.log(4)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;)</span><br><span class="line">process.nextTick(() =&gt; &#123;</span><br><span class="line">  console.log(5)</span><br><span class="line">  setTimeout(() =&gt; &#123;</span><br><span class="line">    console.log(6)</span><br><span class="line">  &#125;, 100)</span><br><span class="line">  setImmediate(() =&gt; &#123;</span><br><span class="line">    console.log(7)</span><br><span class="line">  &#125;)</span><br><span class="line">  process.nextTick(() =&gt; &#123;</span><br><span class="line">    console.log(8)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;)</span><br><span class="line">console.log(9)</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">9</span><br><span class="line">5</span><br><span class="line">8</span><br><span class="line">1</span><br><span class="line">7</span><br><span class="line">4</span><br><span class="line">3</span><br><span class="line">6</span><br><span class="line">2</span><br></pre></td></tr></table></figure>
+
+<p>process.nextTick、setTimeout 和 setImmediate 的组合，请读者自行推理吧。</p>
+<h2 id="3-6-5-参考链接"><a href="#3-6-5-参考链接" class="headerlink" title="3.6.5 参考链接"></a>3.6.5 参考链接</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://cnodejs.org/topic/57d68794cb6f605d360105bf">https://cnodejs.org/topic/57d68794cb6f605d360105bf</a></li>
+<li><a target="_blank" rel="noopener" href="https://cnodejs.org/topic/5a9108d78d6e16e56bb80882">https://cnodejs.org/topic/5a9108d78d6e16e56bb80882</a></li>
+<li><a target="_blank" rel="noopener" href="https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick/">https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick/</a></li>
+<li><a target="_blank" rel="noopener" href="https://medium.com/the-node-js-collection/what-you-should-know-to-really-understand-the-node-js-event-loop-and-its-metrics-c4907b19da4c">https://medium.com/the-node-js-collection/what-you-should-know-to-really-understand-the-node-js-event-loop-and-its-metrics-c4907b19da4c</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Post author:  </strong>Marvin Liu
+  </li>
+  <li class="post-copyright-link">
+      <strong>Post link: </strong>
+      <a href="https://marvinliu1.github.io/2019/05/28/3.6.1%20%E4%BB%80%E4%B9%88%E6%98%AF%20Event%20Loop%EF%BC%9F/" title="Node in Debugging, 3.6 What is event loop?">https://marvinliu1.github.io/2019/05/28/3.6.1 什么是 Event Loop？/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice:  </strong>All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/en" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> unless stating additionally.
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Node/" rel="tag"><i class="fa fa-tag"></i> Node</a>
+              <a href="/tags/Debugging/" rel="tag"><i class="fa fa-tag"></i> Debugging</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2019/06/20/3.7.1%20uncaughtException/" rel="prev" title="Node in Debugging, 3.7 UncaughtException">
+                  <i class="fa fa-chevron-left"></i> Node in Debugging, 3.7 UncaughtException
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2019/05/21/Nuxtjs%20%E5%9F%BA%E7%A1%80%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/" rel="next" title="Nuxt.js Tutorial">
+                  Nuxt.js Tutorial <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2018  
+  <!-- <span itemprop="copyrightYear">2022</span> -->
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Marvin Liu</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"appid":"qAsjmBkdw5m0pBHIrH2owQQT-MdYXbMMI","appkey":"xmNL8CNHrbd2QvJOzWwbj3ny","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>

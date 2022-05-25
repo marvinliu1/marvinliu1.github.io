@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#64CEAA"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#64CEAA">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" integrity="sha256-DfWjNxDkM94fVBWx1H5BMMp0Zq7luBlV8QRcSES7s+0=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"marvinliu1.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.11.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Node in Debugging 日志打点一直是个调试最头疼的问题。如果直接在代码中插入埋点代码，不仅侵入性强而且工作量大也不够灵活，要是能做到智能打点就好了，koa-await-breakpoint 正是我们需要的。 6.1.1 什么是 koa-await-breakpoint？koa-await-breakpoint 是一个 Koa 的中间件，是一个在 routes&#x2F;control">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Node in Debugging - 6.1 Koa-await-breakpoint">
+<meta property="og:url" content="https://marvinliu1.github.io/2019/09/20/6.1%20koa-await-breakpoint/index.html">
+<meta property="og:site_name" content="Marvin&#39;s Blog">
+<meta property="og:description" content="Node in Debugging 日志打点一直是个调试最头疼的问题。如果直接在代码中插入埋点代码，不仅侵入性强而且工作量大也不够灵活，要是能做到智能打点就好了，koa-await-breakpoint 正是我们需要的。 6.1.1 什么是 koa-await-breakpoint？koa-await-breakpoint 是一个 Koa 的中间件，是一个在 routes&#x2F;control">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2019-09-20T06:00:00.000Z">
+<meta property="article:modified_time" content="2022-05-25T04:27:36.571Z">
+<meta property="article:author" content="Marvin Liu">
+<meta property="article:tag" content="Node">
+<meta property="article:tag" content="Debugging">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://marvinliu1.github.io/2019/09/20/6.1%20koa-await-breakpoint/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://marvinliu1.github.io/2019/09/20/6.1%20koa-await-breakpoint/","path":"2019/09/20/6.1 koa-await-breakpoint/","title":"Node in Debugging - 6.1 Koa-await-breakpoint"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Node in Debugging - 6.1 Koa-await-breakpoint | Marvin's Blog</title>
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Marvin's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Marvin's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>links</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#6-1-1-%E4%BB%80%E4%B9%88%E6%98%AF-koa-await-breakpoint%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">6.1.1 什么是 koa-await-breakpoint？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-1-2-%E5%AE%9E%E7%8E%B0%E5%8E%9F%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">6.1.2 实现原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-1-3-%E4%BD%BF%E7%94%A8-koa-await-breakpoint"><span class="nav-number">3.</span> <span class="nav-text">6.1.3 使用 koa-await-breakpoint</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-1-4-%E8%87%AA%E5%AE%9A%E4%B9%89%E6%97%A5%E5%BF%97%E5%AD%98%E5%82%A8"><span class="nav-number">4.</span> <span class="nav-text">6.1.4 自定义日志存储</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-1-5-%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">5.</span> <span class="nav-text">6.1.5 参考链接</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Marvin Liu"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Marvin Liu</p>
+  <div class="site-description" itemprop="description">Take in the good!</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/marvinliu1" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;marvinliu1" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:liuyongquan2010@gmail.com" title="E-Mail → mailto:liuyongquan2010@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+<div style="color:white;">document.designMode='on'</div>
+
+        </div>
+      </div>
+    </div>
+    
+    <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+    <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+    <div class="widget-wrap">
+        <h3 class="widget-title">Tags</h3>
+        <div id="myCanvasContainer" class="widget tagcloud">
+            <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Debugging/" rel="tag">Debugging</a><span class="tag-list-count">30</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/" rel="tag">Hexo</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/" rel="tag">Javascript</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MarkDown/" rel="tag">MarkDown</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NeXt/" rel="tag">NeXt</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Next/" rel="tag">Next</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Node/" rel="tag">Node</a><span class="tag-list-count">30</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nuxt/" rel="tag">Nuxt</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vue/" rel="tag">Vue</a><span class="tag-list-count">3</span></li></ul>
+            </canvas>
+        </div>
+    </div>
+    
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/marvinliu1" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://marvinliu1.github.io/2019/09/20/6.1%20koa-await-breakpoint/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Marvin Liu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Marvin's Blog">
+      <meta itemprop="description" content="Take in the good!">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Node in Debugging - 6.1 Koa-await-breakpoint | Marvin's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Node in Debugging - 6.1 Koa-await-breakpoint
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2019-09-20 00:00:00" itemprop="dateCreated datePublished" datetime="2019-09-20T00:00:00-06:00">2019-09-20</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Node-in-Debugging/" itemprop="url" rel="index"><span itemprop="name">Node in Debugging</span></a>
+        </span>
+    </span>
+
+  
+    <span id="/2019/09/20/6.1%20koa-await-breakpoint/" class="post-meta-item leancloud_visitors" data-flag-title="Node in Debugging - 6.1 Koa-await-breakpoint" title="Views">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><a target="_blank" rel="noopener" href="https://github.com/nswbmw/node-in-debugging">Node in Debugging</a></p>
+<p>日志打点一直是个调试最头疼的问题。如果直接在代码中插入埋点代码，不仅侵入性强而且工作量大也不够灵活，要是能做到智能打点就好了，koa-await-breakpoint 正是我们需要的。</p>
+<h2 id="6-1-1-什么是-koa-await-breakpoint？"><a href="#6-1-1-什么是-koa-await-breakpoint？" class="headerlink" title="6.1.1 什么是 koa-await-breakpoint？"></a>6.1.1 什么是 <a target="_blank" rel="noopener" href="https://github.com/nswbmw/koa-await-breakpoint">koa-await-breakpoint</a>？</h2><p>koa-await-breakpoint 是一个 Koa 的中间件，是一个在 routes&#x2F;controllers 里（作用域包含 ctx）的 await 表达式前后自动打点的工具，不用插入一行日志打点代码，只需要在引入时配置一下，就可以记录每个请求到来时 await 表达式前后的现场，例如：</p>
+<ol>
+<li>await 表达式所在的文件及行列号（filename）。</li>
+<li>await 表达式是执行的第几步（step）。</li>
+<li>await 表达式字符串形式（fn）。</li>
+<li>执行 await 表达式所花费的毫秒（take）。</li>
+<li>执行 await 表达式的结果（result）。</li>
+<li>当前请求的 ctx。</li>
+</ol>
+<p>使用方法如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// On top of the main file</span></span><br><span class="line"><span class="keyword">const</span> koaAwaitBreakpoint = <span class="built_in">require</span>(<span class="string">&#x27;koa-await-breakpoint&#x27;</span>)(&#123;</span><br><span class="line">  <span class="attr">name</span>: <span class="string">&#x27;api&#x27;</span>,</span><br><span class="line">  <span class="attr">files</span>: [<span class="string">&#x27;./routes/*.js&#x27;</span>]</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">Koa</span> = <span class="built_in">require</span>(<span class="string">&#x27;koa&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> app = <span class="keyword">new</span> <span class="title class_">Koa</span>()</span><br><span class="line"></span><br><span class="line"><span class="comment">// Generally, above other middlewares</span></span><br><span class="line">app.<span class="title function_">use</span>(koaAwaitBreakpoint)</span><br><span class="line">...</span><br><span class="line"></span><br><span class="line">app.<span class="title function_">listen</span>(<span class="number">3000</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="6-1-2-实现原理"><a href="#6-1-2-实现原理" class="headerlink" title="6.1.2 实现原理"></a>6.1.2 实现原理</h2><ol>
+<li><p>重载 Module.prototype._compile，相当于 hack 了 require，如果发现是 require 了配置里指定的文件，则进行下一步，否则返回原始代码的内容，相关源代码如下：</p>
+  <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">shimmer.<span class="title function_">wrap</span>(<span class="title class_">Module</span>.<span class="property"><span class="keyword">prototype</span></span>, <span class="string">&#x27;_compile&#x27;</span>, <span class="keyword">function</span> (<span class="params">__compile</span>) &#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">function</span> <span class="title function_">koaBreakpointCompile</span>(<span class="params">content, filename</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!_.<span class="title function_">includes</span>(filenames, filename)) &#123;</span><br><span class="line">      <span class="keyword">return</span> __compile.<span class="title function_">call</span>(<span class="variable language_">this</span>, content, filename);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>用 esprima 解析代码，生成 AST。例如：</p>
+  <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title class_">Mongolass</span> = <span class="built_in">require</span>(<span class="string">&#x27;mongolass&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> mongolass = <span class="keyword">new</span> <span class="title class_">Mongolass</span>(<span class="string">&#x27;mongodb://localhost:27017/test&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">User</span> = mongolass.<span class="title function_">model</span>(<span class="string">&#x27;users&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">exports</span>.<span class="property">getUsers</span> = <span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">getUsers</span>(<span class="params">ctx</span>) &#123;</span><br><span class="line">  <span class="keyword">await</span> <span class="title class_">User</span>.<span class="title function_">create</span>(&#123;</span><br><span class="line">    <span class="attr">name</span>: <span class="string">&#x27;xx&#x27;</span>,</span><br><span class="line">    <span class="attr">age</span>: <span class="number">18</span></span><br><span class="line">  &#125;)</span><br><span class="line">  <span class="keyword">const</span> users = <span class="keyword">await</span> <span class="title class_">User</span>.<span class="title function_">find</span>()</span><br><span class="line">  <span class="keyword">return</span> users</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>  会生成如下 AST，只截取了 <code>await User.create(...)</code> 相关的 AST：</p>
+</li>
+</ol>
+  <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="title class_">Script</span> &#123;</span><br><span class="line">  ...</span><br><span class="line">  <span class="title class_">AwaitExpression</span> &#123;</span><br><span class="line">    <span class="attr">type</span>: <span class="string">&#x27;AwaitExpression&#x27;</span>,</span><br><span class="line">    <span class="attr">argument</span>:</span><br><span class="line">     <span class="title class_">CallExpression</span> &#123;</span><br><span class="line">       <span class="attr">type</span>: <span class="string">&#x27;CallExpression&#x27;</span>,</span><br><span class="line">       <span class="attr">callee</span>:</span><br><span class="line">        <span class="title class_">StaticMemberExpression</span> &#123;</span><br><span class="line">          <span class="attr">type</span>: <span class="string">&#x27;MemberExpression&#x27;</span>,</span><br><span class="line">          <span class="attr">computed</span>: <span class="literal">false</span>,</span><br><span class="line">          <span class="attr">object</span>:</span><br><span class="line">           <span class="title class_">Identifier</span> &#123;</span><br><span class="line">             <span class="attr">type</span>: <span class="string">&#x27;Identifier&#x27;</span>,</span><br><span class="line">             <span class="attr">name</span>: <span class="string">&#x27;User&#x27;</span>,</span><br><span class="line">             <span class="attr">loc</span>: &#123; <span class="attr">start</span>: &#123; <span class="attr">line</span>: <span class="number">6</span>, <span class="attr">column</span>: <span class="number">10</span> &#125;, <span class="attr">end</span>: &#123; <span class="attr">line</span>: <span class="number">6</span>, <span class="attr">column</span>: <span class="number">14</span> &#125; &#125; &#125;,</span><br><span class="line">          <span class="attr">property</span>:</span><br><span class="line">           <span class="title class_">Identifier</span> &#123;</span><br><span class="line">             <span class="attr">type</span>: <span class="string">&#x27;Identifier&#x27;</span>,</span><br><span class="line">             <span class="attr">name</span>: <span class="string">&#x27;create&#x27;</span>,</span><br><span class="line">             <span class="attr">loc</span>: &#123; <span class="attr">start</span>: &#123; <span class="attr">line</span>: <span class="number">6</span>, <span class="attr">column</span>: <span class="number">15</span> &#125;, <span class="attr">end</span>: &#123; <span class="attr">line</span>: <span class="number">6</span>, <span class="attr">column</span>: <span class="number">21</span> &#125; &#125; &#125;,</span><br><span class="line">          <span class="attr">loc</span>: &#123; <span class="attr">start</span>: &#123; <span class="attr">line</span>: <span class="number">6</span>, <span class="attr">column</span>: <span class="number">10</span> &#125;, <span class="attr">end</span>: &#123; <span class="attr">line</span>: <span class="number">6</span>, <span class="attr">column</span>: <span class="number">21</span> &#125; &#125; &#125;,</span><br><span class="line">       <span class="attr">arguments</span>:</span><br><span class="line">        [ <span class="title class_">ObjectExpression</span> &#123;</span><br><span class="line">            <span class="attr">type</span>: <span class="string">&#x27;ObjectExpression&#x27;</span>,</span><br><span class="line">            <span class="attr">properties</span>:</span><br><span class="line">             [ <span class="title class_">Property</span> &#123;</span><br><span class="line">                 <span class="attr">type</span>: <span class="string">&#x27;Property&#x27;</span>,</span><br><span class="line">                 <span class="attr">key</span>:</span><br><span class="line">                  <span class="title class_">Identifier</span> &#123;</span><br><span class="line">                    <span class="attr">type</span>: <span class="string">&#x27;Identifier&#x27;</span>,</span><br><span class="line">                    <span class="attr">name</span>: <span class="string">&#x27;name&#x27;</span>,</span><br><span class="line">                    <span class="attr">loc</span>: &#123; <span class="attr">start</span>: &#123; <span class="attr">line</span>: <span class="number">7</span>, <span class="attr">column</span>: <span class="number">6</span> &#125;, <span class="attr">end</span>: &#123; <span class="attr">line</span>: <span class="number">7</span>, <span class="attr">column</span>: <span class="number">10</span> &#125; &#125; &#125;,</span><br><span class="line">                 <span class="attr">computed</span>: <span class="literal">false</span>,</span><br><span class="line">                 <span class="attr">value</span>:</span><br><span class="line">                  <span class="title class_">Literal</span> &#123;</span><br><span class="line">                    <span class="attr">type</span>: <span class="string">&#x27;Literal&#x27;</span>,</span><br><span class="line">                    <span class="attr">value</span>: <span class="string">&#x27;xx&#x27;</span>,</span><br><span class="line">                    <span class="attr">raw</span>: <span class="string">&#x27;\&#x27;xx\&#x27;&#x27;</span>,</span><br><span class="line">                    <span class="attr">loc</span>: &#123; <span class="attr">start</span>: &#123; <span class="attr">line</span>: <span class="number">7</span>, <span class="attr">column</span>: <span class="number">12</span> &#125;, <span class="attr">end</span>: &#123; <span class="attr">line</span>: <span class="number">7</span>, <span class="attr">column</span>: <span class="number">16</span> &#125; &#125; &#125;,</span><br><span class="line">                 <span class="attr">kind</span>: <span class="string">&#x27;init&#x27;</span>,</span><br><span class="line">                 <span class="attr">method</span>: <span class="literal">false</span>,</span><br><span class="line">                 <span class="attr">shorthand</span>: <span class="literal">false</span>,</span><br><span class="line">                 <span class="attr">loc</span>: &#123; <span class="attr">start</span>: &#123; <span class="attr">line</span>: <span class="number">7</span>, <span class="attr">column</span>: <span class="number">6</span> &#125;, <span class="attr">end</span>: &#123; <span class="attr">line</span>: <span class="number">7</span>, <span class="attr">column</span>: <span class="number">16</span> &#125; &#125; &#125;,</span><br><span class="line">               <span class="title class_">Property</span> &#123;</span><br><span class="line">                 <span class="attr">type</span>: <span class="string">&#x27;Property&#x27;</span>,</span><br><span class="line">                 <span class="attr">key</span>:</span><br><span class="line">                  <span class="title class_">Identifier</span> &#123;</span><br><span class="line">                    <span class="attr">type</span>: <span class="string">&#x27;Identifier&#x27;</span>,</span><br><span class="line">                    <span class="attr">name</span>: <span class="string">&#x27;age&#x27;</span>,</span><br><span class="line">                    <span class="attr">loc</span>: &#123; <span class="attr">start</span>: &#123; <span class="attr">line</span>: <span class="number">8</span>, <span class="attr">column</span>: <span class="number">6</span> &#125;, <span class="attr">end</span>: &#123; <span class="attr">line</span>: <span class="number">8</span>, <span class="attr">column</span>: <span class="number">9</span> &#125; &#125; &#125;,</span><br><span class="line">                 <span class="attr">computed</span>: <span class="literal">false</span>,</span><br><span class="line">                 <span class="attr">value</span>:</span><br><span class="line">                  <span class="title class_">Literal</span> &#123;</span><br><span class="line">                    <span class="attr">type</span>: <span class="string">&#x27;Literal&#x27;</span>,</span><br><span class="line">                    <span class="attr">value</span>: <span class="number">18</span>,</span><br><span class="line">                    <span class="attr">raw</span>: <span class="string">&#x27;18&#x27;</span>,</span><br><span class="line">                    <span class="attr">loc</span>: &#123; <span class="attr">start</span>: &#123; <span class="attr">line</span>: <span class="number">8</span>, <span class="attr">column</span>: <span class="number">11</span> &#125;, <span class="attr">end</span>: &#123; <span class="attr">line</span>: <span class="number">8</span>, <span class="attr">column</span>: <span class="number">13</span> &#125; &#125; &#125;,</span><br><span class="line">                 <span class="attr">kind</span>: <span class="string">&#x27;init&#x27;</span>,</span><br><span class="line">                 <span class="attr">method</span>: <span class="literal">false</span>,</span><br><span class="line">                 <span class="attr">shorthand</span>: <span class="literal">false</span>,</span><br><span class="line">                 <span class="attr">loc</span>: &#123; <span class="attr">start</span>: &#123; <span class="attr">line</span>: <span class="number">8</span>, <span class="attr">column</span>: <span class="number">6</span> &#125;, <span class="attr">end</span>: &#123; <span class="attr">line</span>: <span class="number">8</span>, <span class="attr">column</span>: <span class="number">13</span> &#125; &#125; &#125; ],</span><br><span class="line">            <span class="attr">loc</span>: &#123; <span class="attr">start</span>: &#123; <span class="attr">line</span>: <span class="number">6</span>, <span class="attr">column</span>: <span class="number">22</span> &#125;, <span class="attr">end</span>: &#123; <span class="attr">line</span>: <span class="number">9</span>, <span class="attr">column</span>: <span class="number">5</span> &#125; &#125; &#125; ],</span><br><span class="line">       <span class="attr">loc</span>: &#123; <span class="attr">start</span>: &#123; <span class="attr">line</span>: <span class="number">6</span>, <span class="attr">column</span>: <span class="number">10</span> &#125;, <span class="attr">end</span>: &#123; <span class="attr">line</span>: <span class="number">9</span>, <span class="attr">column</span>: <span class="number">6</span> &#125; &#125; &#125;,</span><br><span class="line">    <span class="attr">loc</span>: &#123; <span class="attr">start</span>: &#123; <span class="attr">line</span>: <span class="number">6</span>, <span class="attr">column</span>: <span class="number">4</span> &#125;, <span class="attr">end</span>: &#123; <span class="attr">line</span>: <span class="number">9</span>, <span class="attr">column</span>: <span class="number">6</span> &#125; &#125; &#125;,</span><br><span class="line">  ...</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>遍历找到 awaitExpression 节点，进行以下包装后生成 AST，替换掉原来的节点。  <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable language_">global</span>.<span class="title function_">logger</span>(</span><br><span class="line">  (<span class="keyword">typeof</span> ctx !== <span class="string">&#x27;undefined&#x27;</span> ? ctx : <span class="variable language_">this</span>),</span><br><span class="line">  <span class="keyword">function</span>(<span class="params"></span>)&#123;</span><br><span class="line">    <span class="keyword">return</span> awaitExpression</span><br><span class="line">  &#125;,</span><br><span class="line">  awaitExpressionString,</span><br><span class="line">  filename</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+  相关源代码如下：  <figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="title function_">findAwaitAndWrapLogger</span>(parsedCodes)</span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">  content = escodegen.<span class="title function_">generate</span>(parsedCodes, &#123;</span><br><span class="line">    <span class="attr">format</span>: &#123; <span class="attr">indent</span>: &#123; <span class="attr">style</span>: <span class="string">&#x27;  &#x27;</span> &#125; &#125;,</span><br><span class="line">    <span class="attr">sourceMap</span>: filename,</span><br><span class="line">    <span class="attr">sourceMapWithCode</span>: <span class="literal">true</span></span><br><span class="line">  &#125;)</span><br><span class="line">&#125; <span class="keyword">catch</span> (e) &#123;</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">error</span>(<span class="string">&#x27;cannot generate code for file: %s&#x27;</span>, filename)</span><br><span class="line">  <span class="variable language_">console</span>.<span class="title function_">error</span>(e.<span class="property">stack</span>)</span><br><span class="line">  process.<span class="title function_">exit</span>(<span class="number">1</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="title function_">debug</span>(<span class="string">&#x27;file %s regenerate codes:\n%s&#x27;</span>, filename, content.<span class="property">code</span>)</span><br></pre></td></tr></table></figure>
+  findAwaitAndWrapLogger 的作用就是遍历 AST，将 awaitExpression 替换成用日志函数包裹后新的 awaitExpression 的 AST。最后用 escodegen 将 AST 生成代码（支持 soucemap，所以错误栈对应的行数是正确的）。</li>
+</ol>
+<p><strong>核心</strong>：每个请求到来时，生成一个 requestId（可自定义，默认为 uuid）挂载到 ctx 上，这样就可以通过 requestId 将日志串起来了。</p>
+<p><strong>特点</strong>：可以记录每个请求的每一步（await 表达式）的现场及返回值，方便查日志。</p>
+<h2 id="6-1-3-使用-koa-await-breakpoint"><a href="#6-1-3-使用-koa-await-breakpoint" class="headerlink" title="6.1.3 使用 koa-await-breakpoint"></a>6.1.3 使用 koa-await-breakpoint</h2><p>测试代码如下：</p>
+<p><strong>app.js</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> koaAwaitBreakpoint = <span class="built_in">require</span>(<span class="string">&#x27;koa-await-breakpoint&#x27;</span>)(&#123;</span><br><span class="line">  <span class="attr">name</span>: <span class="string">&#x27;api&#x27;</span>,</span><br><span class="line">  <span class="attr">files</span>: [<span class="string">&#x27;./routes/*.js&#x27;</span>]</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> <span class="title class_">Paloma</span> = <span class="built_in">require</span>(<span class="string">&#x27;paloma&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> app = <span class="keyword">new</span> <span class="title class_">Paloma</span>()</span><br><span class="line"><span class="keyword">const</span> userRouter = <span class="built_in">require</span>(<span class="string">&#x27;./routes/user&#x27;</span>)</span><br><span class="line"></span><br><span class="line">app.<span class="title function_">use</span>(koaAwaitBreakpoint)</span><br><span class="line">app.<span class="title function_">route</span>(&#123; <span class="attr">method</span>: <span class="string">&#x27;GET&#x27;</span>, <span class="attr">path</span>: <span class="string">&#x27;/users&#x27;</span>, <span class="attr">controller</span>: userRouter.<span class="property">getUsers</span> &#125;)</span><br><span class="line"></span><br><span class="line">app.<span class="title function_">listen</span>(<span class="number">3000</span>)</span><br></pre></td></tr></table></figure>
+
+<p><strong>routes&#x2F;user.js</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title class_">Mongolass</span> = <span class="built_in">require</span>(<span class="string">&#x27;mongolass&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> mongolass = <span class="keyword">new</span> <span class="title class_">Mongolass</span>(<span class="string">&#x27;mongodb://localhost:27017/test&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">User</span> = mongolass.<span class="title function_">model</span>(<span class="string">&#x27;users&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">exports</span>.<span class="property">getUsers</span> = <span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">getUsers</span> (ctx) &#123;</span><br><span class="line">  <span class="keyword">await</span> <span class="title class_">User</span>.<span class="title function_">create</span>(&#123;</span><br><span class="line">    <span class="attr">name</span>: <span class="string">&#x27;xx&#x27;</span>,</span><br><span class="line">    <span class="attr">age</span>: <span class="number">18</span></span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> users = <span class="keyword">await</span> <span class="title class_">User</span>.<span class="title function_">find</span>()</span><br><span class="line">  ctx.<span class="property">body</span> = users</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ DEBUG=koa-await-breakpoint node app.js</span><br></pre></td></tr></table></figure>
+
+<p>终端打印出转换后的代码，可以看出 routes&#x2F;users.js 被转换成了：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> <span class="title class_">Mongolass</span> = <span class="built_in">require</span>(<span class="string">&#x27;mongolass&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> mongolass = <span class="keyword">new</span> <span class="title class_">Mongolass</span>(<span class="string">&#x27;mongodb://localhost:27017/test&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> <span class="title class_">User</span> = mongolass.<span class="title function_">model</span>(<span class="string">&#x27;users&#x27;</span>);</span><br><span class="line"><span class="built_in">exports</span>.<span class="property">getUsers</span> = <span class="keyword">async</span> <span class="keyword">function</span> <span class="title function_">getUsers</span>(<span class="params">ctx</span>) &#123;</span><br><span class="line">  <span class="keyword">await</span> <span class="variable language_">global</span>.<span class="title function_">logger</span>(<span class="keyword">typeof</span> ctx !== <span class="string">&#x27;undefined&#x27;</span> ? ctx : <span class="variable language_">this</span>, <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title class_">User</span>.<span class="title function_">create</span>(&#123;</span><br><span class="line">      <span class="attr">name</span>: <span class="string">&#x27;xx&#x27;</span>,</span><br><span class="line">      <span class="attr">age</span>: <span class="number">18</span></span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;, <span class="string">&#x27;User.create(&#123;\n    name: \&#x27;xx\&#x27;,\n    age: 18\n&#125;)&#x27;</span>, <span class="string">&#x27;/Users/nswbmw/Desktop/test/routes/user.js:6:2&#x27;</span>);</span><br><span class="line">  <span class="keyword">const</span> users = <span class="keyword">await</span> <span class="variable language_">global</span>.<span class="title function_">logger</span>(<span class="keyword">typeof</span> ctx !== <span class="string">&#x27;undefined&#x27;</span> ? ctx : <span class="variable language_">this</span>, <span class="keyword">function</span> (<span class="params"></span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="title class_">User</span>.<span class="title function_">find</span>();</span><br><span class="line">  &#125;, <span class="string">&#x27;User.find()&#x27;</span>, <span class="string">&#x27;/Users/nswbmw/Desktop/test/routes/user.js:11:16&#x27;</span>);</span><br><span class="line">  ctx.<span class="property">body</span> = users;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>访问 localhost:3000&#x2F;users，终端打印出:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="string">&quot;name&quot;</span>:<span class="string">&quot;api&quot;</span>,<span class="string">&quot;requestId&quot;</span>:<span class="string">&quot;50dbda0c-9e13-4659-acce-b237bc5178b7&quot;</span>,<span class="string">&quot;timestamp&quot;</span>:<span class="string">&quot;2018-02-26T06:31:31.100Z&quot;</span>,<span class="string">&quot;this&quot;</span>:...,<span class="string">&quot;type&quot;</span>:<span class="string">&quot;start&quot;</span>,<span class="string">&quot;step&quot;</span>:<span class="number">1</span>,<span class="string">&quot;take&quot;</span>:<span class="number">0</span>&#125;</span><br><span class="line">&#123;<span class="string">&quot;name&quot;</span>:<span class="string">&quot;api&quot;</span>,<span class="string">&quot;requestId&quot;</span>:<span class="string">&quot;50dbda0c-9e13-4659-acce-b237bc5178b7&quot;</span>,<span class="string">&quot;step&quot;</span>:<span class="number">2</span>,<span class="string">&quot;filename&quot;</span>:<span class="string">&quot;/Users/nswbmw/Desktop/test/routes/user.js:6:2&quot;</span>,<span class="string">&quot;timestamp&quot;</span>:<span class="string">&quot;2018-02-26T06:31:31.104Z&quot;</span>,<span class="string">&quot;this&quot;</span>:...,<span class="string">&quot;type&quot;</span>:<span class="string">&quot;beforeAwait&quot;</span>,<span class="string">&quot;fn&quot;</span>:<span class="string">&quot;User.create(&#123;\n    name: &#x27;xx&#x27;,\n    age: 18\n&#125;)&quot;</span>,<span class="string">&quot;take&quot;</span>:<span class="number">4</span>&#125;</span><br><span class="line">&#123;<span class="string">&quot;name&quot;</span>:<span class="string">&quot;api&quot;</span>,<span class="string">&quot;requestId&quot;</span>:<span class="string">&quot;50dbda0c-9e13-4659-acce-b237bc5178b7&quot;</span>,<span class="string">&quot;step&quot;</span>:<span class="number">3</span>,<span class="string">&quot;filename&quot;</span>:<span class="string">&quot;/Users/nswbmw/Desktop/test/routes/user.js:6:2&quot;</span>,<span class="string">&quot;timestamp&quot;</span>:<span class="string">&quot;2018-02-26T06:31:31.175Z&quot;</span>,<span class="string">&quot;this&quot;</span>:...,<span class="string">&quot;type&quot;</span>:<span class="string">&quot;afterAwait&quot;</span>,<span class="string">&quot;fn&quot;</span>:<span class="string">&quot;User.create(&#123;\n    name: &#x27;xx&#x27;,\n    age: 18\n&#125;)&quot;</span>,<span class="string">&quot;result&quot;</span>:&#123;<span class="string">&quot;result&quot;</span>:&#123;<span class="string">&quot;ok&quot;</span>:<span class="number">1</span>,<span class="string">&quot;n&quot;</span>:<span class="number">1</span>&#125;,<span class="string">&quot;ops&quot;</span>:[&#123;<span class="string">&quot;name&quot;</span>:<span class="string">&quot;xx&quot;</span>,<span class="string">&quot;age&quot;</span>:<span class="number">18</span>,<span class="string">&quot;_id&quot;</span>:<span class="string">&quot;5a93a9c3cf8c8797c9b47482&quot;</span>&#125;],<span class="string">&quot;insertedCount&quot;</span>:<span class="number">1</span>,<span class="string">&quot;insertedIds&quot;</span>:[<span class="string">&quot;5a93a9c3cf8c8797c9b47482&quot;</span>]&#125;,<span class="string">&quot;take&quot;</span>:<span class="number">71</span>&#125;</span><br><span class="line">&#123;<span class="string">&quot;name&quot;</span>:<span class="string">&quot;api&quot;</span>,<span class="string">&quot;requestId&quot;</span>:<span class="string">&quot;50dbda0c-9e13-4659-acce-b237bc5178b7&quot;</span>,<span class="string">&quot;step&quot;</span>:<span class="number">4</span>,<span class="string">&quot;filename&quot;</span>:<span class="string">&quot;/Users/nswbmw/Desktop/test/routes/user.js:11:16&quot;</span>,<span class="string">&quot;timestamp&quot;</span>:<span class="string">&quot;2018-02-26T06:31:31.175Z&quot;</span>,<span class="string">&quot;this&quot;</span>:...,<span class="string">&quot;type&quot;</span>:<span class="string">&quot;beforeAwait&quot;</span>,<span class="string">&quot;fn&quot;</span>:<span class="string">&quot;User.find()&quot;</span>,<span class="string">&quot;take&quot;</span>:<span class="number">0</span>&#125;</span><br><span class="line">&#123;<span class="string">&quot;name&quot;</span>:<span class="string">&quot;api&quot;</span>,<span class="string">&quot;requestId&quot;</span>:<span class="string">&quot;50dbda0c-9e13-4659-acce-b237bc5178b7&quot;</span>,<span class="string">&quot;step&quot;</span>:<span class="number">5</span>,<span class="string">&quot;filename&quot;</span>:<span class="string">&quot;/Users/nswbmw/Desktop/test/routes/user.js:11:16&quot;</span>,<span class="string">&quot;timestamp&quot;</span>:<span class="string">&quot;2018-02-26T06:31:31.180Z&quot;</span>,<span class="string">&quot;this&quot;</span>:...,<span class="string">&quot;type&quot;</span>:<span class="string">&quot;afterAwait&quot;</span>,<span class="string">&quot;fn&quot;</span>:<span class="string">&quot;User.find()&quot;</span>,<span class="string">&quot;result&quot;</span>:[&#123;<span class="string">&quot;_id&quot;</span>:<span class="string">&quot;5a93a9c3cf8c8797c9b47482&quot;</span>,<span class="string">&quot;name&quot;</span>:<span class="string">&quot;xx&quot;</span>,<span class="string">&quot;age&quot;</span>:<span class="number">18</span>&#125;],<span class="string">&quot;take&quot;</span>:<span class="number">5</span>&#125;</span><br><span class="line">&#123;<span class="string">&quot;name&quot;</span>:<span class="string">&quot;api&quot;</span>,<span class="string">&quot;requestId&quot;</span>:<span class="string">&quot;50dbda0c-9e13-4659-acce-b237bc5178b7&quot;</span>,<span class="string">&quot;timestamp&quot;</span>:<span class="string">&quot;2018-02-26T06:31:31.181Z&quot;</span>,<span class="string">&quot;this&quot;</span>:...,<span class="string">&quot;type&quot;</span>:<span class="string">&quot;end&quot;</span>,<span class="string">&quot;step&quot;</span>:<span class="number">6</span>,<span class="string">&quot;take&quot;</span>:<span class="number">1</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意</strong>：type 是以下其中一种，take 的单位是 ms。</p>
+<ol>
+<li>start：请求到来时第 1 次打点。</li>
+<li>beforeAwait：上一个 awaitExpression 之后到这一个 awaitExpression 之前。</li>
+<li>afterAwait：这个 awaitExpression 开始到结束。</li>
+<li>error：错误日志，包含了错误信息。</li>
+<li>end：请求结束时打点。</li>
+</ol>
+<h2 id="6-1-4-自定义日志存储"><a href="#6-1-4-自定义日志存储" class="headerlink" title="6.1.4 自定义日志存储"></a>6.1.4 自定义日志存储</h2><p>store 参数最好自己定义（默认打印日志到 stdout），该参数是一个对象并且有一个 save 方法即可。在 save 方法内可做一些逻辑修改或者日志策略，比如：</p>
+<ol>
+<li>添加日志标识（例如：name）方便区分不同服务的日志。</li>
+<li>针对错误日志，添加一些额外字段方便追踪现场。</li>
+<li>将日志发送到 Logstash 或其他日志服务。</li>
+<li>限制日志频率，比如：只有响应时间大于 500ms 的请求日志才会被记录。</li>
+</ol>
+<p><strong>koa_await_breakpoint_store.js</strong></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">exports</span>.<span class="property">save</span> = <span class="keyword">function</span> <span class="title function_">save</span>(<span class="params">record, ctx</span>) &#123;</span><br><span class="line">  record.<span class="property">name</span> = <span class="string">&#x27;app name&#x27;</span></span><br><span class="line">  record.<span class="property">env</span> = process.<span class="property">env</span>.<span class="property">NODE_ENV</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">if</span> (record.<span class="property">error</span>) &#123;</span><br><span class="line">    record.<span class="property">error</span> = &#123;</span><br><span class="line">      <span class="attr">message</span>: record.<span class="property">error</span>.<span class="property">message</span>,</span><br><span class="line">      <span class="attr">stack</span>: record.<span class="property">error</span>.<span class="property">stack</span>,</span><br><span class="line">      <span class="attr">status</span>: record.<span class="property">error</span>.<span class="property">status</span> || record.<span class="property">error</span>.<span class="property">statusCode</span> || <span class="number">500</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  ...</span><br><span class="line">  logstash.<span class="title function_">send</span>(record)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="6-1-5-参考链接"><a href="#6-1-5-参考链接" class="headerlink" title="6.1.5 参考链接"></a>6.1.5 参考链接</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/jquery/esprima">https://github.com/jquery/esprima</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/estools/escodegen">https://github.com/estools/escodegen</a></li>
+</ul>
+<p>上一节：<a target="_blank" rel="noopener" href="https://github.com/nswbmw/node-in-debugging/blob/master/5.2%20Elastic%20APM.md">5.2 Elastic APM</a></p>
+<p>下一节：<a target="_blank" rel="noopener" href="https://github.com/nswbmw/node-in-debugging/blob/master/6.2%20async_hooks.md">6.2 async_hooks</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Post author:  </strong>Marvin Liu
+  </li>
+  <li class="post-copyright-link">
+      <strong>Post link: </strong>
+      <a href="https://marvinliu1.github.io/2019/09/20/6.1%20koa-await-breakpoint/" title="Node in Debugging - 6.1 Koa-await-breakpoint">https://marvinliu1.github.io/2019/09/20/6.1 koa-await-breakpoint/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice:  </strong>All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/en" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> unless stating additionally.
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Node/" rel="tag"><i class="fa fa-tag"></i> Node</a>
+              <a href="/tags/Debugging/" rel="tag"><i class="fa fa-tag"></i> Debugging</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2019/09/29/6.2%20async_hooks/" rel="prev" title="Node in Debugging - 6.2 Async Hooks">
+                  <i class="fa fa-chevron-left"></i> Node in Debugging - 6.2 Async Hooks
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2019/08/26/5.2%20Elastic%20APM/" rel="next" title="Node in Debugging - 5.2 Elastic APM">
+                  Node in Debugging - 5.2 Elastic APM <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2018  
+  <!-- <span itemprop="copyrightYear">2022</span> -->
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Marvin Liu</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"appid":"qAsjmBkdw5m0pBHIrH2owQQT-MdYXbMMI","appkey":"xmNL8CNHrbd2QvJOzWwbj3ny","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>

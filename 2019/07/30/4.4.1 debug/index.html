@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#64CEAA"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#64CEAA">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" integrity="sha256-DfWjNxDkM94fVBWx1H5BMMp0Zq7luBlV8QRcSES7s+0=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"marvinliu1.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.11.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Node in Debugging 上一小节讲解了如何用使用 VS Code 调试 Node.js 代码，但调试不只是打断点，比如：  如何快速地切换输出的日志类型（或级别）? 我想用 moment 打印出年份，是使用 moment().format(&#39;YYYY&#39;)，还是 moment().format(&#39;yyyy&#39;)，还是两种写法都可以? 断言报错：Asserti">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Node in Debugging, 4.4 Debug">
+<meta property="og:url" content="https://marvinliu1.github.io/2019/07/30/4.4.1%20debug/index.html">
+<meta property="og:site_name" content="Marvin&#39;s Blog">
+<meta property="og:description" content="Node in Debugging 上一小节讲解了如何用使用 VS Code 调试 Node.js 代码，但调试不只是打断点，比如：  如何快速地切换输出的日志类型（或级别）? 我想用 moment 打印出年份，是使用 moment().format(&#39;YYYY&#39;)，还是 moment().format(&#39;yyyy&#39;)，还是两种写法都可以? 断言报错：Asserti">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://github.com/nswbmw/node-in-debugging/raw/master/assets/4.4.1.jpg">
+<meta property="og:image" content="https://github.com/nswbmw/node-in-debugging/raw/master/assets/4.4.2.jpg">
+<meta property="article:published_time" content="2019-07-30T06:00:00.000Z">
+<meta property="article:modified_time" content="2022-05-25T04:23:30.946Z">
+<meta property="article:author" content="Marvin Liu">
+<meta property="article:tag" content="Node">
+<meta property="article:tag" content="Debugging">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://github.com/nswbmw/node-in-debugging/raw/master/assets/4.4.1.jpg">
+
+
+<link rel="canonical" href="https://marvinliu1.github.io/2019/07/30/4.4.1%20debug/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://marvinliu1.github.io/2019/07/30/4.4.1%20debug/","path":"2019/07/30/4.4.1 debug/","title":"Node in Debugging, 4.4 Debug"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Node in Debugging, 4.4 Debug | Marvin's Blog</title>
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Marvin's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Marvin's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>links</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#4-4-1-debug"><span class="nav-number">1.</span> <span class="nav-text">4.4.1 debug</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-4-2-repl2"><span class="nav-number">2.</span> <span class="nav-text">4.4.2 repl2</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-4-3-power-assert"><span class="nav-number">3.</span> <span class="nav-text">4.4.3 power-assert</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-4-4-%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">4.</span> <span class="nav-text">4.4.4 参考链接</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Marvin Liu"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Marvin Liu</p>
+  <div class="site-description" itemprop="description">Take in the good!</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/marvinliu1" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;marvinliu1" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:liuyongquan2010@gmail.com" title="E-Mail → mailto:liuyongquan2010@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+<div style="color:white;">document.designMode='on'</div>
+
+        </div>
+      </div>
+    </div>
+    
+    <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+    <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+    <div class="widget-wrap">
+        <h3 class="widget-title">Tags</h3>
+        <div id="myCanvasContainer" class="widget tagcloud">
+            <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Debugging/" rel="tag">Debugging</a><span class="tag-list-count">30</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/" rel="tag">Hexo</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/" rel="tag">Javascript</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MarkDown/" rel="tag">MarkDown</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NeXt/" rel="tag">NeXt</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Next/" rel="tag">Next</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Node/" rel="tag">Node</a><span class="tag-list-count">30</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nuxt/" rel="tag">Nuxt</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vue/" rel="tag">Vue</a><span class="tag-list-count">3</span></li></ul>
+            </canvas>
+        </div>
+    </div>
+    
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/marvinliu1" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://marvinliu1.github.io/2019/07/30/4.4.1%20debug/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Marvin Liu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Marvin's Blog">
+      <meta itemprop="description" content="Take in the good!">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Node in Debugging, 4.4 Debug | Marvin's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Node in Debugging, 4.4 Debug
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2019-07-30 00:00:00" itemprop="dateCreated datePublished" datetime="2019-07-30T00:00:00-06:00">2019-07-30</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Node-in-Debugging/" itemprop="url" rel="index"><span itemprop="name">Node in Debugging</span></a>
+        </span>
+    </span>
+
+  
+    <span id="/2019/07/30/4.4.1%20debug/" class="post-meta-item leancloud_visitors" data-flag-title="Node in Debugging, 4.4 Debug" title="Views">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><a target="_blank" rel="noopener" href="https://github.com/nswbmw/node-in-debugging">Node in Debugging</a></p>
+<p>上一小节讲解了如何用使用 VS Code 调试 Node.js 代码，但调试不只是打断点，比如：</p>
+<ul>
+<li>如何快速地切换输出的日志类型（或级别）?</li>
+<li>我想用 moment 打印出年份，是使用 <code>moment().format(&#39;YYYY&#39;)</code>，还是 <code>moment().format(&#39;yyyy&#39;)</code>，还是两种写法都可以?</li>
+<li>断言报错：AssertionError: false &#x3D;&#x3D; true，没啥有用信息，黑人问号???</li>
+</ul>
+<p>本节将介绍 3 款实用的调试工具，分别解决以上 3 种情况，来提高我们的调试效率。</p>
+<h2 id="4-4-1-debug"><a href="#4-4-1-debug" class="headerlink" title="4.4.1 debug"></a>4.4.1 debug</h2><p>debug 是一个小巧却非常实用的日志模块，可以根据环境变量决定打印不同类型（或级别）的日志。代码如下：</p>
+<p><strong>app.js</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">const normalLog = require(&#x27;debug&#x27;)(&#x27;log&#x27;)</span><br><span class="line">const errorLowLog = require(&#x27;debug&#x27;)(&#x27;error:low&#x27;)</span><br><span class="line">const errorNormalLog = require(&#x27;debug&#x27;)(&#x27;error:normal&#x27;)</span><br><span class="line">const errorHighLog = require(&#x27;debug&#x27;)(&#x27;error:high&#x27;)</span><br><span class="line"></span><br><span class="line">setInterval(() =&gt; &#123;</span><br><span class="line">  const value = Math.random()</span><br><span class="line">  switch (true) &#123;</span><br><span class="line">    case value &lt; 0.5: normalLog(value); break</span><br><span class="line">    case value &gt;= 0.5 &amp;&amp; value &lt; 0.7: errorLowLog(value); break</span><br><span class="line">    case value &gt;= 0.7 &amp;&amp; value &lt; 0.9: errorNormalLog(value); break</span><br><span class="line">    case value &gt;= 0.9: errorHighLog(value); break</span><br><span class="line">    default: normalLog(value)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;, 1000)</span><br></pre></td></tr></table></figure>
+
+<p>运行上面的代码，每一秒生成一个随机数，根据随机数的值模拟不同级别的日志输出：</p>
+<ul>
+<li>&lt; 0.5：正常日志。</li>
+<li>0.5~0.7：低级别的错误日志。</li>
+<li>0.7~0.9：一般级别的错误日志。</li>
+<li>&gt;&#x3D; 0.9：严重级别的错误日志。</li>
+</ul>
+<p>运行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ DEBUG=* node app.js</span><br></pre></td></tr></table></figure>
+
+<p>打印如下：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/nswbmw/node-in-debugging/blob/master/assets/4.4.1.jpg"><img src="https://github.com/nswbmw/node-in-debugging/raw/master/assets/4.4.1.jpg" alt="img"></a></p>
+<p>可以看出，debug 模块打印的日志与 console.log 相比，有以下几个特点：</p>
+<ol>
+<li>不同的日志类型分配了不同的颜色加以区分，更直观。</li>
+<li>添加了日志类型的前缀。</li>
+<li>添加了自上一次该类型日志打印到这次日志打印经历了多长时间的后缀。</li>
+</ol>
+<p>debug 模块支持以下用法：</p>
+<ul>
+<li>DEBUG&#x3D;*：打印所有类型的日志。</li>
+<li>DEBUG&#x3D;log：只打印 log 类型的日志。</li>
+<li>DEBUG&#x3D;error:*：打印所有以 error: 开头的日志。</li>
+<li>DEBUG&#x3D;error:*,-error:low：打印所有以 error: 开头的并且过滤掉 error:low 类型的日志。</li>
+</ul>
+<p>下面演示一下第 4 种的用法，运行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ DEBUG=error:*,-error:low node app.js</span><br></pre></td></tr></table></figure>
+
+<p>打印如下：</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/nswbmw/node-in-debugging/blob/master/assets/4.4.2.jpg"><img src="https://github.com/nswbmw/node-in-debugging/raw/master/assets/4.4.2.jpg" alt="img"></a></p>
+<h2 id="4-4-2-repl2"><a href="#4-4-2-repl2" class="headerlink" title="4.4.2 repl2"></a>4.4.2 repl2</h2><p>我们在写代码时，有时可能记不清某个模块的某个方法的具体用法，比如：用 moment 格式化年份是用 <code>moment().format(&#39;YYYY&#39;)</code> 还是用 <code>moment().format(&#39;yyyy&#39;)</code> 还是两种写法都可以？lodash 的 <code>_.pick</code> 方法能否能接收数组作为参数？这个时候相对于翻阅官方文档，在 REPL 里试一下可能会更快，通常步骤是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ npm i moment</span><br><span class="line">$ node</span><br><span class="line">&gt; const moment = require(&#x27;moment&#x27;)</span><br><span class="line">&gt; moment().format(&#x27;YYYY&#x27;)</span><br><span class="line">&#x27;2017&#x27;</span><br><span class="line">&gt; moment().format(&#x27;yyyy&#x27;)</span><br><span class="line">&#x27;yyyy&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>一次还好，次数多了也略微烦琐。repl2 模块便是为了解决这个问题而生的。</p>
+<p>repl2 顾名思义是 REPL 的增强版，repl2 会根据一个用户配置（~&#x2F;.noderc），预先加载模块到 REPL 中，省下了我们手动在 REPL 中 require 模块的过程。</p>
+<p>全局安装 repl2：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npm i repl2 -g</span><br></pre></td></tr></table></figure>
+
+<p>使用方式很简单:</p>
+<ol>
+<li>将常用的模块全局安装，例如：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npm i lodash validator moment -g</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>添加配置到 ~&#x2F;.noderc：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;lodash&quot;: &quot;__&quot;,</span><br><span class="line">  &quot;moment&quot;: &quot;moment&quot;,</span><br><span class="line">  &quot;validator&quot;: &quot;validator&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>运行 noder：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ noder</span><br><span class="line">__ = lodash@4.17.4 -&gt; local</span><br><span class="line">moment = moment@2.18.1 -&gt; global</span><br><span class="line">validator = validator@7.0.0 -&gt; global</span><br><span class="line">&gt; moment().format(&#x27;YYYY&#x27;)</span><br><span class="line">&#x27;2017&#x27;</span><br><span class="line">&gt; __.random(0, 5)</span><br><span class="line">3</span><br><span class="line">&gt; validator.isEmail(&#x27;foo@bar.com&#x27;)</span><br><span class="line">true</span><br></pre></td></tr></table></figure>
+
+<p>需要讲解以下几点：</p>
+<ol>
+<li>~&#x2F;.noderc 是一个 JSON 文件，key 是模块的名字，value 是 require 这个模块后加载到 REPL 中的变量名。这里给 lodash 命名的变量名是 __ 而不是 _，是因为 REPL 中 _ 有特殊含义，表示上一个表达式的结果。</li>
+<li>repl2 会优先加载当前目录下的模块，没有找到然后再去加载全局安装的模块。上面结果显示 lodash 是从本地目录加载的，因为 test 目录下已经安装了 lodash，其余的模块没有从本地目录找到则尝试从全局 npm 目录加载。如果都没有找到，则不会加载。</li>
+</ol>
+<h2 id="4-4-3-power-assert"><a href="#4-4-3-power-assert" class="headerlink" title="4.4.3 power-assert"></a>4.4.3 power-assert</h2><p>我们常用的断言库有：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/shouldjs/should.js">should.js</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/Automattic/expect.js">expect.js</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/chaijs/chai">chai</a></li>
+</ul>
+<p>但这类断言库都有一些通病：</p>
+<ol>
+<li>过分追求语义化，API 复杂。</li>
+<li>错误信息不足。</li>
+</ol>
+<p>先看一段代码：</p>
+<p><strong>test.js</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">const assert = require(&#x27;assert&#x27;)</span><br><span class="line">const should = require(&#x27;should&#x27;)</span><br><span class="line">const expect = require(&#x27;expect.js&#x27;)</span><br><span class="line"></span><br><span class="line">const tom = &#123; id: 1, age: 18 &#125;</span><br><span class="line">const bob = &#123; id: 2, age: 20 &#125;</span><br><span class="line"></span><br><span class="line">describe(&#x27;app.js&#x27;, () =&gt; &#123;</span><br><span class="line">  it(&#x27;assert&#x27;, () =&gt; &#123;</span><br><span class="line">    assert(tom.age &gt; bob.age)</span><br><span class="line">  &#125;)</span><br><span class="line">  it(&#x27;should.js&#x27;, () =&gt; &#123;</span><br><span class="line">    tom.age.should.be.above(bob.age)</span><br><span class="line">  &#125;)</span><br><span class="line">  it(&#x27;expect.js&#x27;, () =&gt; &#123;</span><br><span class="line">    expect(tom.age).be.above(bob.age)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+<p>运行：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ mocha</span><br></pre></td></tr></table></figure>
+
+<p>结果如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">app.js</span><br><span class="line">  1) assert</span><br><span class="line">  2) should.js</span><br><span class="line">  3) expect.js</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">0 passing (13ms)</span><br><span class="line">3 failing</span><br><span class="line"></span><br><span class="line">1) app.js</span><br><span class="line">     assert:</span><br><span class="line"></span><br><span class="line">    AssertionError [ERR_ASSERTION]: false == true</span><br><span class="line">    + expected - actual</span><br><span class="line"></span><br><span class="line">    -false</span><br><span class="line">    +true</span><br><span class="line"></span><br><span class="line">    at Context.it (test.js:10:5)</span><br><span class="line"></span><br><span class="line">2) app.js</span><br><span class="line">     should.js:</span><br><span class="line">   AssertionError: expected 18 to be above 20</span><br><span class="line">    at Assertion.fail (node_modules/should/cjs/should.js:275:17)</span><br><span class="line">    at Assertion.value (node_modules/should/cjs/should.js:356:19)</span><br><span class="line">    at Context.it (test.js:13:23)</span><br><span class="line"></span><br><span class="line">3) app.js</span><br><span class="line">     expect.js:</span><br><span class="line">   Error: expected 18 to be above 20</span><br><span class="line">    at Assertion.assert (node_modules/expect.js/index.js:96:13)</span><br><span class="line">    at Assertion.greaterThan.Assertion.above (node_modules/expect.js/index.js:297:10)</span><br><span class="line">    at Function.above (node_modules/expect.js/index.js:499:17)</span><br><span class="line">    at Context.it (test.js:16:24)</span><br></pre></td></tr></table></figure>
+
+<p>可以看出，基本没有有用的信息。这时，power-assert 粉墨登场。</p>
+<p>power-assert 使用起来很简单，理论上只用一个 assert 就可以了，而且可以无缝迁移。</p>
+<p><strong>注意</strong>：在使用 intelli-espower-loader 时，要求必须将测试文件放到 test&#x2F; 目录下，所以我们在 test 目录下创建 test&#x2F;app.js，将原来的 test.js 代码粘贴过去。</p>
+<p>安装 power-assert 和 intelli-espower-loader，然后运行测试：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ npm i power-assert intelli-espower-loader --save-dev</span><br><span class="line">$ mocha -r intelli-espower-loader</span><br></pre></td></tr></table></figure>
+
+<p>结果如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">app.js</span><br><span class="line">  1) assert</span><br><span class="line">  2) should.js</span><br><span class="line">  3) expect.js</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">0 passing (42ms)</span><br><span class="line">3 failing</span><br><span class="line"></span><br><span class="line">1) app.js</span><br><span class="line">     assert:</span><br><span class="line"></span><br><span class="line">    AssertionError [ERR_ASSERTION]:   # test/app.js:10</span><br><span class="line"></span><br><span class="line">assert(tom.age &gt; bob.age)</span><br><span class="line">       |   |   | |   |</span><br><span class="line">       |   |   | |   20</span><br><span class="line">       |   |   | Object&#123;id:2,age:20&#125;</span><br><span class="line">       |   18  false</span><br><span class="line">       Object&#123;id:1,age:18&#125;</span><br><span class="line"></span><br><span class="line">    + expected - actual</span><br><span class="line"></span><br><span class="line">    -false</span><br><span class="line">    +true</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<p>错误信息非常直观，有以下两点需要说明：</p>
+<ol>
+<li>mocha 需要引入 intelli-espower-loader，主要是转译代码，转译之后 <code>require(&#39;assert&#39;)</code> 都不需要改。</li>
+<li>intelli-espower-loader 可选择地在 package.json 中添加 directories.test 配置，例如：</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&quot;directories&quot;: &#123;</span><br><span class="line">  &quot;test&quot;: &quot;mytest/&quot;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果没有 directories.test 配置，则默认是 <code>test/</code>。</p>
+<h2 id="4-4-4-参考链接"><a href="#4-4-4-参考链接" class="headerlink" title="4.4.4 参考链接"></a>4.4.4 参考链接</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/25956323">https://zhuanlan.zhihu.com/p/25956323</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.npmjs.com/package/intelli-espower-loader">https://www.npmjs.com/package/intelli-espower-loader</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Post author:  </strong>Marvin Liu
+  </li>
+  <li class="post-copyright-link">
+      <strong>Post link: </strong>
+      <a href="https://marvinliu1.github.io/2019/07/30/4.4.1%20debug/" title="Node in Debugging, 4.4 Debug">https://marvinliu1.github.io/2019/07/30/4.4.1 debug/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice:  </strong>All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/en" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> unless stating additionally.
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Node/" rel="tag"><i class="fa fa-tag"></i> Node</a>
+              <a href="/tags/Debugging/" rel="tag"><i class="fa fa-tag"></i> Debugging</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2019/08/03/4.5%20supervisor-hot-reload/" rel="prev" title="Node in Debugging, 4.5 Supervisor-hot-reload">
+                  <i class="fa fa-chevron-left"></i> Node in Debugging, 4.5 Supervisor-hot-reload
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2019/07/26/4.3.1%20%E5%9F%BA%E6%9C%AC%E8%B0%83%E8%AF%95/" rel="next" title="Node in Debugging, 4.3 VS Code Debugging">
+                  Node in Debugging, 4.3 VS Code Debugging <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2018  
+  <!-- <span itemprop="copyrightYear">2022</span> -->
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Marvin Liu</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"appid":"qAsjmBkdw5m0pBHIrH2owQQT-MdYXbMMI","appkey":"xmNL8CNHrbd2QvJOzWwbj3ny","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>

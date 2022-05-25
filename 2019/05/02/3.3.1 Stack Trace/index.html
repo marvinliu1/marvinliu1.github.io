@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#64CEAA"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#64CEAA">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.1.1/css/all.min.css" integrity="sha256-DfWjNxDkM94fVBWx1H5BMMp0Zq7luBlV8QRcSES7s+0=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"marvinliu1.github.io","root":"/","images":"/images","scheme":"Pisces","darkmode":false,"version":"8.11.1","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":true,"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":false,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"Searching...","empty":"We didn't find any results for the search: ${query}","hits_time":"${hits} results found in ${time} ms","hits":"${hits} results found"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Node in Debugging 对于 JavaScript 中的 Error，想必大家已经很熟悉了，毕竟天天与它打交道。 Node.js 内置的 Error 类型有：  Error：通用的错误类型，例如：new Error(&#39;error!!!&#39;)。 SyntaxError：语法错误，例如：require(&#39;vm&#39;).runInThisContext(&#39;b">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Node in Debugging, 3.3 Stack Trace">
+<meta property="og:url" content="https://marvinliu1.github.io/2019/05/02/3.3.1%20Stack%20Trace/index.html">
+<meta property="og:site_name" content="Marvin&#39;s Blog">
+<meta property="og:description" content="Node in Debugging 对于 JavaScript 中的 Error，想必大家已经很熟悉了，毕竟天天与它打交道。 Node.js 内置的 Error 类型有：  Error：通用的错误类型，例如：new Error(&#39;error!!!&#39;)。 SyntaxError：语法错误，例如：require(&#39;vm&#39;).runInThisContext(&#39;b">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2019-05-02T06:00:00.000Z">
+<meta property="article:modified_time" content="2022-05-25T04:23:07.031Z">
+<meta property="article:author" content="Marvin Liu">
+<meta property="article:tag" content="Node">
+<meta property="article:tag" content="Debugging">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="https://marvinliu1.github.io/2019/05/02/3.3.1%20Stack%20Trace/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"en","comments":true,"permalink":"https://marvinliu1.github.io/2019/05/02/3.3.1%20Stack%20Trace/","path":"2019/05/02/3.3.1 Stack Trace/","title":"Node in Debugging, 3.3 Stack Trace"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Node in Debugging, 3.3 Stack Trace | Marvin's Blog</title>
+  
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+<link rel="alternate" href="/atom.xml" title="Marvin's Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">Marvin's Blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a></li><li class="menu-item menu-item-categories"><a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a></li><li class="menu-item menu-item-links"><a href="/links/" rel="section"><i class="fa fa-link fa-fw"></i>links</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>About</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>Search
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="Searching..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-1-Stack-Trace"><span class="nav-number">1.</span> <span class="nav-text">3.3.1 Stack Trace</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-2-Error-captureStackTrace"><span class="nav-number">2.</span> <span class="nav-text">3.3.2 Error.captureStackTrace</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-3-captureStackTrace-%E5%9C%A8-Mongolass-%E4%B8%AD%E7%9A%84%E5%BA%94%E7%94%A8"><span class="nav-number">3.</span> <span class="nav-text">3.3.3 captureStackTrace 在 Mongolass 中的应用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-4-Error-prepareStackTrace"><span class="nav-number">4.</span> <span class="nav-text">3.3.4 Error.prepareStackTrace</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-5-Error-prepareStackTrace-%E7%9A%84%E5%85%B6%E4%BB%96%E7%94%A8%E6%B3%95"><span class="nav-number">5.</span> <span class="nav-text">3.3.5 Error.prepareStackTrace 的其他用法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-6-Error-stackTraceLimit"><span class="nav-number">6.</span> <span class="nav-text">3.3.6 Error.stackTraceLimit</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-7-Long-Stack-Trace"><span class="nav-number">7.</span> <span class="nav-text">3.3.7 Long Stack Trace</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-8-%E5%8F%82%E8%80%83%E9%93%BE%E6%8E%A5"><span class="nav-number">8.</span> <span class="nav-text">3.3.8 参考链接</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="Marvin Liu"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">Marvin Liu</p>
+  <div class="site-description" itemprop="description">Take in the good!</div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+          <a href="/categories/">
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">categories</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/marvinliu1" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;marvinliu1" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:liuyongquan2010@gmail.com" title="E-Mail → mailto:liuyongquan2010@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+<div style="color:white;">document.designMode='on'</div>
+
+        </div>
+      </div>
+    </div>
+    
+    <script type="text/javascript" charset="utf-8" src="/js/tagcloud.js"></script>
+    <script type="text/javascript" charset="utf-8" src="/js/tagcanvas.js"></script>
+    <div class="widget-wrap">
+        <h3 class="widget-title">Tags</h3>
+        <div id="myCanvasContainer" class="widget tagcloud">
+            <canvas width="250" height="250" id="resCanvas" style="width=100%">
+                <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Debugging/" rel="tag">Debugging</a><span class="tag-list-count">30</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/" rel="tag">Hexo</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/" rel="tag">Javascript</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MarkDown/" rel="tag">MarkDown</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NeXt/" rel="tag">NeXt</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Next/" rel="tag">Next</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Node/" rel="tag">Node</a><span class="tag-list-count">30</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nuxt/" rel="tag">Nuxt</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vue/" rel="tag">Vue</a><span class="tag-list-count">3</span></li></ul>
+            </canvas>
+        </div>
+    </div>
+    
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="Back to top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+  <a href="https://github.com/marvinliu1" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="en">
+    <link itemprop="mainEntityOfPage" href="https://marvinliu1.github.io/2019/05/02/3.3.1%20Stack%20Trace/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="Marvin Liu">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Marvin's Blog">
+      <meta itemprop="description" content="Take in the good!">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Node in Debugging, 3.3 Stack Trace | Marvin's Blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Node in Debugging, 3.3 Stack Trace
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">Posted on</span>
+
+      <time title="Created: 2019-05-02 00:00:00" itemprop="dateCreated datePublished" datetime="2019-05-02T00:00:00-06:00">2019-05-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-folder"></i>
+      </span>
+      <span class="post-meta-item-text">In</span>
+        <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+          <a href="/categories/Node-in-Debugging/" itemprop="url" rel="index"><span itemprop="name">Node in Debugging</span></a>
+        </span>
+    </span>
+
+  
+    <span id="/2019/05/02/3.3.1%20Stack%20Trace/" class="post-meta-item leancloud_visitors" data-flag-title="Node in Debugging, 3.3 Stack Trace" title="Views">
+      <span class="post-meta-item-icon">
+        <i class="far fa-eye"></i>
+      </span>
+      <span class="post-meta-item-text">Views: </span>
+      <span class="leancloud-visitors-count"></span>
+    </span>
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p><a target="_blank" rel="noopener" href="https://github.com/nswbmw/node-in-debugging">Node in Debugging</a></p>
+<p>对于 JavaScript 中的 Error，想必大家已经很熟悉了，毕竟天天与它打交道。</p>
+<p>Node.js 内置的 Error 类型有：</p>
+<ol>
+<li><a target="_blank" rel="noopener" href="https://nodejs.org/api/errors.html%23errors_class_error">Error</a>：通用的错误类型，例如：<code>new Error(&#39;error!!!&#39;)</code>。</li>
+<li><a target="_blank" rel="noopener" href="https://nodejs.org/api/errors.html%23errors_class_syntaxerror">SyntaxError</a>：语法错误，例如：<code>require(&#39;vm&#39;).runInThisContext(&#39;binary ! isNotOk&#39;)</code>。</li>
+<li><a target="_blank" rel="noopener" href="https://nodejs.org/api/errors.html%23errors_class_referenceerror">ReferenceError</a>：引用错误，如引用一个未定义的变量，例如：<code>doesNotExist</code>。</li>
+<li><a target="_blank" rel="noopener" href="https://nodejs.org/api/errors.html%23errors_class_typeerror">TypeError</a>：类型错误，例如：<code>require(&#39;url&#39;).parse(() =&gt; &#123;&#125;)</code>。</li>
+<li><a target="_blank" rel="noopener" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/URIError">URIError</a>：全局的 URI 处理函数抛出的错误，例如：<code>encodeURI(&#39;\uD800&#39;)</code>。</li>
+<li><a target="_blank" rel="noopener" href="https://nodejs.org/api/errors.html%23errors_class_assertionerror">AssertError</a>：使用 assert 模块时抛出的错误，例如：<code>assert(false)</code>。</li>
+</ol>
+<p>每个 Error 对象通常有 name、message、stack、constructor 等属性。当程序抛出异常时，我们需要根据错误栈（error.stack）定位到出错代码。希望本节能够帮助读者理解并玩转错误栈，写出错误栈清晰的代码，方便调试。</p>
+<h2 id="3-3-1-Stack-Trace"><a href="#3-3-1-Stack-Trace" class="headerlink" title="3.3.1 Stack Trace"></a>3.3.1 Stack Trace</h2><p>错误栈本质上就是调用栈（或者叫：堆栈追踪）。所以我们先复习一下 JavaScript 中调用栈的概念。</p>
+<p><strong>调用栈</strong>：每当有一个函数调用，就会将其压入栈顶，在调用结束的时候再将其从栈顶移出。</p>
+<p>来看一段代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">function c () &#123;</span><br><span class="line">  console.log(&#x27;c&#x27;)</span><br><span class="line">  console.trace()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function b () &#123;</span><br><span class="line">  console.log(&#x27;b&#x27;)</span><br><span class="line">  c()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function a () &#123;</span><br><span class="line">  console.log(&#x27;a&#x27;)</span><br><span class="line">  b()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">a()</span><br></pre></td></tr></table></figure>
+
+<p>执行后打印出：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">a</span><br><span class="line">b</span><br><span class="line">c</span><br><span class="line">Trace</span><br><span class="line">    at c (/Users/nswbmw/Desktop/test/app.js:3:11)</span><br><span class="line">    at b (/Users/nswbmw/Desktop/test/app.js:8:3)</span><br><span class="line">    at a (/Users/nswbmw/Desktop/test/app.js:13:3)</span><br><span class="line">    at Object.&lt;anonymous&gt; (/Users/nswbmw/Desktop/test/app.js:16:1)</span><br><span class="line">    at ...</span><br></pre></td></tr></table></figure>
+
+<p><strong>可以看出</strong>：c 函数中 console.trace() 打印出的堆栈追踪依次为 c、b、a，即 a 调用了 b，b 调用了 c。</p>
+<p>稍微修改下上面的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">function c () &#123;</span><br><span class="line">  console.log(&#x27;c&#x27;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function b () &#123;</span><br><span class="line">  console.log(&#x27;b&#x27;)</span><br><span class="line">  c()</span><br><span class="line">  console.trace()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function a () &#123;</span><br><span class="line">  console.log(&#x27;a&#x27;)</span><br><span class="line">  b()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">a()</span><br></pre></td></tr></table></figure>
+
+<p>执行后打印出：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">a</span><br><span class="line">b</span><br><span class="line">c</span><br><span class="line">Trace</span><br><span class="line">    at b (/Users/nswbmw/Desktop/test/app.js:8:11)</span><br><span class="line">    at a (/Users/nswbmw/Desktop/test/app.js:13:3)</span><br><span class="line">    at Object.&lt;anonymous&gt; (/Users/nswbmw/Desktop/test/app.js:16:1)</span><br><span class="line">    at ...</span><br></pre></td></tr></table></figure>
+
+<p><strong>可以看出</strong>：c() 在 console.trace() 之前执行完毕，从栈中移除，所以栈中从上往下为 b、a。</p>
+<p>上面示例的代码过于简单，在实际情况下错误栈并没有这么直观。以常用的 <a target="_blank" rel="noopener" href="https://www.npmjs.com/package/mongoose">mongoose</a> 为例，mongoose 的错误栈并不友好：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">const mongoose = require(&#x27;mongoose&#x27;)</span><br><span class="line">const Schema = mongoose.Schema</span><br><span class="line">mongoose.connect(&#x27;mongodb://localhost/test&#x27;)</span><br><span class="line"></span><br><span class="line">const UserSchema = new Schema(&#123;</span><br><span class="line">  id: mongoose.Schema.Types.ObjectId</span><br><span class="line">&#125;)</span><br><span class="line">const User = mongoose.model(&#x27;User&#x27;, UserSchema)</span><br><span class="line">User</span><br><span class="line">  .create(&#123; id: &#x27;xxx&#x27; &#125;)</span><br><span class="line">  .then(console.log)</span><br><span class="line">  .catch(console.error)</span><br></pre></td></tr></table></figure>
+
+<p>运行后打印出：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">&#123; ValidationError: User validation failed: id: Cast to ObjectID failed for value &quot;xxx&quot; at path &quot;id&quot;</span><br><span class="line">    at ValidationError.inspect (/Users/nswbmw/Desktop/test/node_modules/mongoose/lib/error/validation.js:56:24)</span><br><span class="line">    at ...</span><br><span class="line">  errors:</span><br><span class="line">   &#123; id:</span><br><span class="line">      &#123; CastError: Cast to ObjectID failed for value &quot;xxx&quot; at path &quot;id&quot;</span><br><span class="line">    at new CastError (/Users/nswbmw/Desktop/test/node_modules/mongoose/lib/error/cast.js:27:11)</span><br><span class="line">    at model.$set (/Users/nswbmw/Desktop/test/node_modules/mongoose/lib/document.js:792:7)</span><br><span class="line">    at ...</span><br><span class="line">        message: &#x27;Cast to ObjectID failed for value &quot;xxx&quot; at path &quot;id&quot;&#x27;,</span><br><span class="line">        name: &#x27;CastError&#x27;,</span><br><span class="line">        stringValue: &#x27;&quot;xxx&quot;&#x27;,</span><br><span class="line">        kind: &#x27;ObjectID&#x27;,</span><br><span class="line">        value: &#x27;xxx&#x27;,</span><br><span class="line">        path: &#x27;id&#x27;,</span><br><span class="line">        reason: [Object] &#125; &#125;,</span><br><span class="line">  _message: &#x27;User validation failed&#x27;,</span><br><span class="line">  name: &#x27;ValidationError&#x27; &#125;</span><br></pre></td></tr></table></figure>
+
+<p>从 mongoose 给出的 error.stack 中看不到任何有用的信息，error.message 告诉我们 “xxx” 不匹配 User 这个 Model 的 id（ObjectID）的类型，其他的字段基本上也是这个结论的补充，却没有给出我们最关心的问题：<strong>我写的代码中，到底哪一行出了问题？</strong></p>
+<p>如何解决这个问题呢？我们先看看 Error.captureStackTrace 的用法。</p>
+<h2 id="3-3-2-Error-captureStackTrace"><a href="#3-3-2-Error-captureStackTrace" class="headerlink" title="3.3.2 Error.captureStackTrace"></a>3.3.2 Error.captureStackTrace</h2><p>Error.captureStackTrace 是 V8 提供的一个 API，可以传入两个参数：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Error.captureStackTrace(targetObject[, constructorOpt])</span><br></pre></td></tr></table></figure>
+
+<p>Error.captureStackTrace 会在 targetObject 中添加一个 stack 属性，对该属性进行访问时，将以字符串的形式返回 Error.captureStackTrace() 语句被调用时的代码位置信息（即：调用栈历史）。</p>
+<p>举个简单的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">const myObject = &#123;&#125;</span><br><span class="line">Error.captureStackTrace(myObject)</span><br><span class="line">console.log(myObject.stack)</span><br><span class="line">// 输出</span><br><span class="line">Error</span><br><span class="line">    at Object.&lt;anonymous&gt; (/Users/nswbmw/Desktop/test/app.js:2:7)</span><br><span class="line">    at ...</span><br></pre></td></tr></table></figure>
+
+<p>除了 targetObject，captureStackTrace 还接收一个类型为 function 的可选参数 constructorOpt，当传递该参数时，调用栈中所有 constructorOpt 函数之上的信息(包括 constructorOpt 函数自身)，都会在访问 targetObject.stack 时被忽略。当需要对终端用户隐藏内部的实现细节时，constructorOpt 参数会很有用。传入第 2 个参数通常用于自定义错误，例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">function MyError() &#123;</span><br><span class="line">  Error.captureStackTrace(this, MyError)</span><br><span class="line">  this.name = this.constructor.name</span><br><span class="line">  this.message = &#x27;you got MyError&#x27;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">const myError = new MyError()</span><br><span class="line">console.log(myError)</span><br><span class="line">console.log(myError.stack)</span><br><span class="line">// 输出</span><br><span class="line">MyError &#123; name: &#x27;MyError&#x27;, message: &#x27;you got MyError&#x27; &#125;</span><br><span class="line">Error</span><br><span class="line">    at Object.&lt;anonymous&gt; (/Users/nswbmw/Desktop/test/app.js:7:17)</span><br><span class="line">    at ...</span><br></pre></td></tr></table></figure>
+
+<p>如果去掉 captureStackTrace 的第 2 个参数：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">function MyError() &#123;</span><br><span class="line">  Error.captureStackTrace(this)</span><br><span class="line">  this.name = this.constructor.name</span><br><span class="line">  this.message = &#x27;you got MyError&#x27;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">const myError = new MyError()</span><br><span class="line">console.log(myError)</span><br><span class="line">console.log(myError.stack)</span><br><span class="line">// 输出</span><br><span class="line">MyError &#123; name: &#x27;MyError&#x27;, message: &#x27;you got MyError&#x27; &#125;</span><br><span class="line">Error</span><br><span class="line">    at new MyError (/Users/nswbmw/Desktop/test/app.js:2:9)</span><br><span class="line">    at Object.&lt;anonymous&gt; (/Users/nswbmw/Desktop/test/app.js:7:17)</span><br><span class="line">    at ...</span><br></pre></td></tr></table></figure>
+
+<p><strong>可以看出</strong>：出现了 MyError 相关的调用栈，但我们并不关心 MyError 及其内部是如何实现的。</p>
+<p>captureStackTrace 的第 2 个参数可以传入调用链上的其他函数，不一定是当前函数，例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">const myObj = &#123;&#125;</span><br><span class="line"></span><br><span class="line">function c () &#123;</span><br><span class="line">  Error.captureStackTrace(myObj, b)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function b () &#123;</span><br><span class="line">  c()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function a () &#123;</span><br><span class="line">  b()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">a()</span><br><span class="line">console.log(myObj.stack)</span><br><span class="line">// 输出</span><br><span class="line">Error</span><br><span class="line">    at a (/Users/nswbmw/Desktop/test/app.js:12:3)</span><br><span class="line">    at Object.&lt;anonymous&gt; (/Users/nswbmw/Desktop/test/app.js:15:1)</span><br><span class="line">    at ...</span><br></pre></td></tr></table></figure>
+
+<p><strong>可以看出</strong>：captureStackTrace 的第 2 个参数传入了函数 b，调用栈中隐藏了 b 函数及其以上所有的堆栈帧。</p>
+<p>讲到这里，相信读者都明白了 captureStackTrace 的用法。但这具体有什么用呢？其实上面提到了：<strong>隐藏内部的实现细节，优化错误栈</strong>。</p>
+<p>下面以笔者写的一个模块 <a target="_blank" rel="noopener" href="https://github.com/mongolass/mongolass">Mongolass</a> 为例，讲解如何应用 captureStackTrace。</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://github.com/mongolass/mongolass">Mongolass</a> 是一个轻量且优雅的连接 MongoDB 的模块。</p>
+</blockquote>
+<h2 id="3-3-3-captureStackTrace-在-Mongolass-中的应用"><a href="#3-3-3-captureStackTrace-在-Mongolass-中的应用" class="headerlink" title="3.3.3 captureStackTrace 在 Mongolass 中的应用"></a>3.3.3 captureStackTrace 在 Mongolass 中的应用</h2><p>这里先大体讲讲 Mongolass 的用法。Mongolass 与 Mongoose 类似，有 Model 的概念，Model 上挂载的方法对应对 MongoDB 的 collections 的操作，例如：<code>User.insert</code>。User 是一个 Model 实例，<code>User.insert</code> 方法返回的是一个 Query 实例。Query 的代码如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">class Query &#123;</span><br><span class="line">  constructor(op, args) &#123;</span><br><span class="line">    Error.captureStackTrace(this, this.constructor);</span><br><span class="line">    ...</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里用 Error.captureStackTrace 隐藏了 Query 内部的错误栈细节，但这样带来一个问题：丢失了原来的 error.stack，在 Mongolass 中可以自定义插件，而插件函数的执行是在 Query 内部，假如在插件中抛错，则会丢失相关错误栈信息。</p>
+<p>如何弥补呢？Mongolass 的做法是：当 Query 内部抛出错误（error）时，截取有用的 error.stack，然后拼接到 Query 实例通过 Error.captureStackTrace 生成的 stack 上。</p>
+<p>来看一段 Mongolass 的代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">const Mongolass = require(&#x27;mongolass&#x27;)</span><br><span class="line">const Schema = Mongolass.Schema</span><br><span class="line">const mongolass = new Mongolass(&#x27;mongodb://localhost:27017/test&#x27;)</span><br><span class="line"></span><br><span class="line">const UserSchema = new Schema(&#x27;UserSchema&#x27;, &#123;</span><br><span class="line">  name: &#123; type: &#x27;string&#x27; &#125;,</span><br><span class="line">  age: &#123; type: &#x27;number&#x27; &#125;</span><br><span class="line">&#125;)</span><br><span class="line">const User = mongolass.model(&#x27;User&#x27;, UserSchema)</span><br><span class="line"></span><br><span class="line">User</span><br><span class="line">  .insertOne(&#123; name: &#x27;nswbmw&#x27;, age: &#x27;wrong age&#x27; &#125;)</span><br><span class="line">  .exec()</span><br><span class="line">  .then(console.log)</span><br><span class="line">  .catch(console.error)</span><br></pre></td></tr></table></figure>
+
+<p>运行后打印的错误信息如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">&#123; TypeError: ($.age: &quot;wrong age&quot;) ✖ (type: number)</span><br><span class="line">    at Model.insertOne (/Users/nswbmw/Desktop/test/node_modules/mongolass/lib/query.js:104:16)</span><br><span class="line">    at Object.&lt;anonymous&gt; (/Users/nswbmw/Desktop/test/app.js:12:4)</span><br><span class="line">    at ...</span><br><span class="line">  validator: &#x27;type&#x27;,</span><br><span class="line">  actual: &#x27;wrong age&#x27;,</span><br><span class="line">  expected: &#123; type: &#x27;number&#x27; &#125;,</span><br><span class="line">  path: &#x27;$.age&#x27;,</span><br><span class="line">  schema: &#x27;UserSchema&#x27;,</span><br><span class="line">  model: &#x27;User&#x27;,</span><br><span class="line">  op: &#x27;insertOne&#x27;,</span><br><span class="line">  args: [ &#123; name: &#x27;nswbmw&#x27;, age: &#x27;wrong age&#x27; &#125; ],</span><br><span class="line">  pluginName: &#x27;MongolassSchema&#x27;,</span><br><span class="line">  pluginOp: &#x27;beforeInsertOne&#x27;,</span><br><span class="line">  pluginArgs: [] &#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>可以看出</strong>：app.js 第 12 行的 insertOne 报错，报错原因是 age 字段是字符串 “wrong age”，而我们期望的是 number 类型的值。</p>
+<h2 id="3-3-4-Error-prepareStackTrace"><a href="#3-3-4-Error-prepareStackTrace" class="headerlink" title="3.3.4 Error.prepareStackTrace"></a>3.3.4 Error.prepareStackTrace</h2><p>V8 暴露了另外一个接口——Error.prepareStackTrace。简单来讲，它的作用就是：<strong>定制 stack</strong>。用法如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Error.prepareStackTrace(error, structuredStackTrace)</span><br></pre></td></tr></table></figure>
+
+<p>第 1 个参数是个 Error 对象，第 2 个参数是一个数组，每一项都是一个 CallSite 对象，包含错误的函数名、行数等信息。对比以下两种代码：</p>
+<p>正常的 throw error：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">function c () &#123;</span><br><span class="line">  throw new Error(&#x27;error!!!&#x27;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function b () &#123;</span><br><span class="line">  c()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function a () &#123;</span><br><span class="line">  b()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">try &#123;</span><br><span class="line">  a()</span><br><span class="line">&#125; catch (e) &#123;</span><br><span class="line">  console.log(e.stack)</span><br><span class="line">&#125;</span><br><span class="line">// 输出</span><br><span class="line">Error: error!!!</span><br><span class="line">    at c (/Users/nswbmw/Desktop/test/app.js:2:9)</span><br><span class="line">    at b (/Users/nswbmw/Desktop/test/app.js:6:3)</span><br><span class="line">    at a (/Users/nswbmw/Desktop/test/app.js:10:3)</span><br><span class="line">    at Object.&lt;anonymous&gt; (/Users/nswbmw/Desktop/test/app.js:14:3)</span><br><span class="line">    at ...</span><br></pre></td></tr></table></figure>
+
+<p>使用 Error.prepareStackTrace 格式化 stack：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">Error.prepareStackTrace = function (error, callSites) &#123;</span><br><span class="line">  return error.toString() + &#x27;\n&#x27; + callSites.map(callSite =&gt; &#123;</span><br><span class="line">    return &#x27;    -&gt; &#x27; + callSite.getFunctionName() + &#x27; (&#x27;</span><br><span class="line">      + callSite.getFileName() + &#x27;:&#x27;</span><br><span class="line">      + callSite.getLineNumber() + &#x27;:&#x27;</span><br><span class="line">      + callSite.getColumnNumber() + &#x27;)&#x27;</span><br><span class="line">  &#125;).join(&#x27;\n&#x27;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function c () &#123;</span><br><span class="line">  throw new Error(&#x27;error!!!&#x27;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function b () &#123;</span><br><span class="line">  c()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function a () &#123;</span><br><span class="line">  b()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">try &#123;</span><br><span class="line">  a()</span><br><span class="line">&#125; catch (e) &#123;</span><br><span class="line">  console.log(e.stack)</span><br><span class="line">&#125;</span><br><span class="line">// 输出</span><br><span class="line">Error: error!!!</span><br><span class="line">    -&gt; c (/Users/nswbmw/Desktop/test/app.js:11:9)</span><br><span class="line">    -&gt; b (/Users/nswbmw/Desktop/test/app.js:15:3)</span><br><span class="line">    -&gt; a (/Users/nswbmw/Desktop/test/app.js:19:3)</span><br><span class="line">    -&gt; null (/Users/nswbmw/Desktop/test/app.js:23:3)</span><br><span class="line">    -&gt; ...</span><br></pre></td></tr></table></figure>
+
+<p><strong>可以看出</strong>：我们自定义了一个 Error.prepareStackTrace 格式化了 stack 并打印出来。</p>
+<p>CallSite 对象还有许多 API，例如：getThis、getTypeName、getFunction、getFunctionName、getMethodName、getFileName、getLineNumber、getColumnNumber、getEvalOrigin、isToplevel、isEval、isNative 和 isConstructor，这里不一一介绍了，有兴趣的读者可查看参考链接。</p>
+<p>在使用 Error.prepareStackTrace 时需要注意两点：</p>
+<ol>
+<li>这个方法是 V8 暴露出来的，所以只能在基于 V8 的 Node.js 或者 Chrome 里才能使用。</li>
+<li>这个方法会修改全局 Error 的行为。</li>
+</ol>
+<h2 id="3-3-5-Error-prepareStackTrace-的其他用法"><a href="#3-3-5-Error-prepareStackTrace-的其他用法" class="headerlink" title="3.3.5 Error.prepareStackTrace 的其他用法"></a>3.3.5 Error.prepareStackTrace 的其他用法</h2><p>Error.prepareStackTrace 除了格式化错误栈外还有什么作用呢？<a target="_blank" rel="noopener" href="https://github.com/sindresorhus">sindresorhus</a> 大神还写了一个 <a target="_blank" rel="noopener" href="https://github.com/sindresorhus/callsites">callsites</a> 的模块，可以用来获取函数调用相关的信息，例如获取执行该函数所在的文件名：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">const callsites = require(&#x27;callsites&#x27;)</span><br><span class="line"></span><br><span class="line">function getFileName() &#123;</span><br><span class="line">  console.log(callsites()[0].getFileName())</span><br><span class="line">  //=&gt; &#x27;/Users/nswbmw/Desktop/test/app.js&#x27;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">getFileName()</span><br></pre></td></tr></table></figure>
+
+<p>我们来看一下源代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">module.exports = () =&gt; &#123;</span><br><span class="line">  const _ = Error.prepareStackTrace</span><br><span class="line">  Error.prepareStackTrace = (_, stack) =&gt; stack</span><br><span class="line">  const stack = new Error().stack.slice(1)</span><br><span class="line">  Error.prepareStackTrace = _</span><br><span class="line">  return stack</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意以下几点：</p>
+<ol>
+<li>因为修改 Error.prepareStackTrace 会全局生效，所以将原来的 Error.prepareStackTrace 存到一个变量中，函数执行完后再重置回去，避免影响全局的 Error。</li>
+<li>Error.prepareStackTrace 函数直接返回 CallSite 对象数组，而不是格式化后的 stack 字符串。</li>
+<li>new 一个 Error，stack 是返回的 CallSite 对象数组，因为第 1 项是 callsites，它总是这个模块的 CallSite，所以通过 slice(1) 去掉。</li>
+</ol>
+<p>假如我们想获取当前函数的父函数名，则可以这样用：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">const callsites = require(&#x27;callsites&#x27;)</span><br><span class="line"></span><br><span class="line">function b () &#123;</span><br><span class="line">  console.log(callsites()[1].getFunctionName())</span><br><span class="line">  // =&gt; &#x27;a&#x27;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function a () &#123;</span><br><span class="line">  b()</span><br><span class="line">&#125;</span><br><span class="line">a()</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-3-6-Error-stackTraceLimit"><a href="#3-3-6-Error-stackTraceLimit" class="headerlink" title="3.3.6 Error.stackTraceLimit"></a>3.3.6 Error.stackTraceLimit</h2><p>Node.js 还暴露了一个 Error.stackTraceLimit 的设置，可以通过设置这个值来改变输出的 stack 的行数，默认值是 10。</p>
+<h2 id="3-3-7-Long-Stack-Trace"><a href="#3-3-7-Long-Stack-Trace" class="headerlink" title="3.3.7 Long Stack Trace"></a>3.3.7 Long Stack Trace</h2><p>stack trace 也有短板，问题出在异步操作上。若在异步回调中抛错，就会丢失绑定回调前的调用栈信息，来看个例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">const foo = function () &#123;</span><br><span class="line">  throw new Error(&#x27;error!!!&#x27;)</span><br><span class="line">&#125;</span><br><span class="line">const bar = function () &#123;</span><br><span class="line">  setTimeout(foo)</span><br><span class="line">&#125;</span><br><span class="line">bar()</span><br><span class="line">// 输出</span><br><span class="line">/Users/nswbmw/Desktop/test/app.js:2</span><br><span class="line">  throw new Error(&#x27;error!!!&#x27;)</span><br><span class="line">  ^</span><br><span class="line"></span><br><span class="line">Error: error!!!</span><br><span class="line">    at Timeout.foo [as _onTimeout] (/Users/nswbmw/Desktop/test/app.js:2:9)</span><br><span class="line">    at ontimeout (timers.js:469:11)</span><br><span class="line">    at tryOnTimeout (timers.js:304:5)</span><br><span class="line">    at Timer.listOnTimeout (timers.js:264:5)</span><br></pre></td></tr></table></figure>
+
+<p><strong>可以看出</strong>：丢失了 bar 的调用栈。</p>
+<p>在实际开发过程中，异步回调的例子数不胜数，如果不能知道异步回调之前的触发位置，则会给 debug 带来很大的难度。这时，出现了一个叫 long Stack Trace 的概念。</p>
+<p>long Stack Trace 并不是 JavaScript 原生就支持的功能，所以要拥有这样的功能，就需要我们做一些 hack，幸好在 V8 环境下，所有 hack 所需的 API，V8 都已经提供了。</p>
+<p>对于异步回调，目前能做的就是在所有会产生异步操作的 API 上做一些手脚，这些 API 包括：</p>
+<ul>
+<li>setTimeout, setInterval, setImmediate。</li>
+<li>nextTick, nextDomainTick。</li>
+<li>EventEmitter.addEventListener。</li>
+<li>EventEmitter.on。</li>
+<li>Ajax XHR。</li>
+</ul>
+<p>Long Stack Trace 相关的库可以参考：</p>
+<ol>
+<li><a target="_blank" rel="noopener" href="https://github.com/AndreasMadsen/trace">AndreasMadsen&#x2F;trace</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/mattinsler/longjohn">mattinsler&#x2F;longjohn</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/tlrobinson/long-stack-traces">tlrobinson&#x2F;long-stack-traces</a></li>
+</ol>
+<p>node@8+ 提供了强大的 async_hooks 模块，在本书的后面章节会介绍如何使用。</p>
+<h2 id="3-3-8-参考链接"><a href="#3-3-8-参考链接" class="headerlink" title="3.3.8 参考链接"></a>3.3.8 参考链接</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/25338849">https://zhuanlan.zhihu.com/p/25338849</a></li>
+<li><a target="_blank" rel="noopener" href="https://segmentfault.com/a/1190000007076507">https://segmentfault.com/a/1190000007076507</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/v8/v8/wiki/Stack-Trace-API">https://github.com/v8/v8/wiki/Stack-Trace-API</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.jianshu.com/p/1d5120ad62bb">https://www.jianshu.com/p/1d5120ad62bb</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          
+
+<div class="post-copyright">
+<ul>
+  <li class="post-copyright-author">
+      <strong>Post author:  </strong>Marvin Liu
+  </li>
+  <li class="post-copyright-link">
+      <strong>Post link: </strong>
+      <a href="https://marvinliu1.github.io/2019/05/02/3.3.1%20Stack%20Trace/" title="Node in Debugging, 3.3 Stack Trace">https://marvinliu1.github.io/2019/05/02/3.3.1 Stack Trace/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>Copyright Notice:  </strong>All articles in this blog are licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/en" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> unless stating additionally.
+  </li>
+</ul>
+</div>
+
+          <div class="post-tags">
+              <a href="/tags/Node/" rel="tag"><i class="fa fa-tag"></i> Node</a>
+              <a href="/tags/Debugging/" rel="tag"><i class="fa fa-tag"></i> Debugging</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2019/05/10/3.4.1%20Ignition%20+%20Turbofan/" rel="prev" title="Node in Debugging, 3.4 Ignition + Turbofan">
+                  <i class="fa fa-chevron-left"></i> Node in Debugging, 3.4 Ignition + Turbofan
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2019/04/28/3.2.1%20async%20+%20await/" rel="next" title="Node in Debugging, 3.2 Async and Await">
+                  Node in Debugging, 3.2 Async and Await <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2018  
+  <!-- <span itemprop="copyrightYear">2022</span> -->
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Marvin Liu</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdn.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+  <script class="next-config" data-name="leancloud_visitors" type="application/json">{"enable":true,"appid":"qAsjmBkdw5m0pBHIrH2owQQT-MdYXbMMI","appkey":"xmNL8CNHrbd2QvJOzWwbj3ny","server_url":null,"security":false}</script>
+  <script src="/js/third-party/statistics/lean-analytics.js"></script>
+
+
+
+</body>
+</html>
