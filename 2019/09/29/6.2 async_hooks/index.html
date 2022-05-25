@@ -160,7 +160,7 @@
   <nav class="site-state">
       <div class="site-state-item site-state-posts">
         <a href="/archives/">
-          <span class="site-state-item-count">38</span>
+          <span class="site-state-item-count">37</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
@@ -198,7 +198,7 @@
         <h3 class="widget-title">Tags</h3>
         <div id="myCanvasContainer" class="widget tagcloud">
             <canvas width="250" height="250" id="resCanvas" style="width=100%">
-                <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Debugging/" rel="tag">Debugging</a><span class="tag-list-count">30</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/" rel="tag">Hexo</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/" rel="tag">Javascript</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MarkDown/" rel="tag">MarkDown</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NeXt/" rel="tag">NeXt</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Next/" rel="tag">Next</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Node/" rel="tag">Node</a><span class="tag-list-count">30</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nohup/" rel="tag">Nohup</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nuxt/" rel="tag">Nuxt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vue/" rel="tag">Vue</a><span class="tag-list-count">2</span></li></ul>
+                <ul class="tag-list" itemprop="keywords"><li class="tag-list-item"><a class="tag-list-link" href="/tags/Debugging/" rel="tag">Debugging</a><span class="tag-list-count">30</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Hexo/" rel="tag">Hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Javascript/" rel="tag">Javascript</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Linux/" rel="tag">Linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/MarkDown/" rel="tag">MarkDown</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/NeXt/" rel="tag">NeXt</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Next/" rel="tag">Next</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Node/" rel="tag">Node</a><span class="tag-list-count">30</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nohup/" rel="tag">Nohup</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Nuxt/" rel="tag">Nuxt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/Vue/" rel="tag">Vue</a><span class="tag-list-count">2</span></li></ul>
             </canvas>
         </div>
     </div>
@@ -295,7 +295,7 @@
         <p><a target="_blank" rel="noopener" href="https://github.com/nswbmw/node-in-debugging">Node in Debugging</a></p>
 <p>上一小节讲解了 koa-await-breakpoint 的用法，但 koa-await-breakpoint 仍然有一个很大的缺憾，即无法记录除 routes&#x2F;controllers 外的函数的执行时间（因为获取不到当前请求的 ctx）。举个通俗的例子：在一个路由的 controller 里面调用了 A ，A 调用了其他文件的 B ，B 又调用了其他文件的 C…这是非常常见的用法，但之前使用 koa-await-breakpoint 只能获取 A 的执行时间，无法获取 B 和 C 的执行时间。</p>
 <p><strong>根本原因在于</strong>：无法知道函数之间的调用关系，即 B 不知道是 A 调用的它，即便知道也不知道是哪次请求到来时执行的 A 调用的它。</p>
-<p>但是，<a href="mailto:&#110;&#111;&#x64;&#x65;&#64;&#x38;&#46;&#x31;">&#110;&#111;&#x64;&#x65;&#64;&#x38;&#46;&#x31;</a> 引入了一个黑魔法——Async Hooks。</p>
+<p>但是，<a href="mailto:&#110;&#111;&#x64;&#101;&#64;&#x38;&#46;&#x31;">&#110;&#111;&#x64;&#101;&#64;&#x38;&#46;&#x31;</a> 引入了一个黑魔法——Async Hooks。</p>
 <h2 id="6-2-1-Async-Hooks"><a href="#6-2-1-Async-Hooks" class="headerlink" title="6.2.1 Async Hooks"></a>6.2.1 Async Hooks</h2><p>我们先看看 async_hooks 是什么。Node.js 官网对 async_hooks 的介绍为：</p>
 <blockquote>
 <p>The <code>async_hooks</code> module provides an API to register callbacks tracking the lifetime of asynchronous resources created inside a Node.js application.</p>
