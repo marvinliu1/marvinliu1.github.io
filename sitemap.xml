@@ -451,6 +451,20 @@
     <priority>0.2</priority>
   </url>
   
+  <url>
+    <loc>https://marvinliu1.github.io/tags/Nohup/</loc>
+    <lastmod>2022-05-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://marvinliu1.github.io/tags/Linux/</loc>
+    <lastmod>2022-05-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
 
   
   <url>
@@ -469,6 +483,13 @@
   
   <url>
     <loc>https://marvinliu1.github.io/categories/Nuxt/</loc>
+    <lastmod>2022-05-25</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://marvinliu1.github.io/categories/Hexo/Linux/</loc>
     <lastmod>2022-05-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>

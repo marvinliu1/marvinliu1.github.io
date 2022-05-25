@@ -505,7 +505,7 @@
     <link href="https://marvinliu1.github.io/2019/07/21/Nohup-exit/"/>
     <id>https://marvinliu1.github.io/2019/07/21/Nohup-exit/</id>
     <published>2019-07-21T06:00:00.000Z</published>
-    <updated>2022-05-25T04:51:20.953Z</updated>
+    <updated>2022-05-25T05:05:54.636Z</updated>
     
     <content type="html"><![CDATA[<p>Today I have encounterd a weird issue with Nohup, my sh command is used as:</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">nohup</span> npm start 2&gt;/dev/null 1&gt;/dev/null&amp;</span><br></pre></td></tr></table></figure><p>But after I have closed the connection of my Putty, the npm thread was terminated.</p><p>Finally, I have found the problem is with the session, to disconnect the Putty, I have to tpye in command exit, instead of closing the window directly, the exit command will leave the session running in background.</p>]]></content>
     
@@ -518,14 +518,14 @@
     
     
     
-    <category term="Nuxt" scheme="https://marvinliu1.github.io/categories/Nuxt/"/>
+    <category term="Hexo" scheme="https://marvinliu1.github.io/categories/Hexo/"/>
+    
+    <category term="Linux" scheme="https://marvinliu1.github.io/categories/Hexo/Linux/"/>
     
     
-    <category term="Vue" scheme="https://marvinliu1.github.io/tags/Vue/"/>
+    <category term="Nohup" scheme="https://marvinliu1.github.io/tags/Nohup/"/>
     
-    <category term="Nuxt" scheme="https://marvinliu1.github.io/tags/Nuxt/"/>
-    
-    <category term="Javascript" scheme="https://marvinliu1.github.io/tags/Javascript/"/>
+    <category term="Linux" scheme="https://marvinliu1.github.io/tags/Linux/"/>
     
   </entry>
   

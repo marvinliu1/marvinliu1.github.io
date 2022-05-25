@@ -50,6 +50,9 @@ https://marvinliu1.github.io/tags/Nuxt/
 https://marvinliu1.github.io/tags/Javascript/
 https://marvinliu1.github.io/tags/MarkDown/
 https://marvinliu1.github.io/tags/Next/
+https://marvinliu1.github.io/tags/Nohup/
+https://marvinliu1.github.io/tags/Linux/
 https://marvinliu1.github.io/categories/Node-in-Debugging/
 https://marvinliu1.github.io/categories/Hexo/
 https://marvinliu1.github.io/categories/Nuxt/
+https://marvinliu1.github.io/categories/Hexo/Linux/
