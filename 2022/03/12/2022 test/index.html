@@ -28,8 +28,9 @@
 <meta property="og:description" content="本文转载自Cu Blog NexT 主题自带的并没有友链页面，本着 “可以不用但必须有” 的思想，我通过搜索引擎找到了可行的解决方案，在此记录，希望能帮到其他人。 NexT 版本：8.10.1。 先看一下最终效果吧：  NexT 配置文件修改打开_config.next.yml 文件，搜索_data，能够找到这样一条被注释的语句：style: source&#x2F;_data&#x2F;styles.styl，取消">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://marvinliu1.github.io/images/blogs/favlinks.png">
+<meta property="og:image" content="https://marvinliu1.github.io/2022/03/12/2022%20test/&#123;&#123;%20link.avatar%20&#125;&#125;">
 <meta property="article:published_time" content="2022-03-12T07:00:00.000Z">
-<meta property="article:modified_time" content="2022-05-25T15:32:06.224Z">
+<meta property="article:modified_time" content="2022-05-25T15:37:29.914Z">
 <meta property="article:author" content="Marvin Liu">
 <meta property="article:tag" content="Linux">
 <meta name="twitter:card" content="summary">
@@ -146,7 +147,7 @@
       <div class="sidebar-panel-container">
         <!--noindex-->
         <div class="post-toc-wrap sidebar-panel">
-            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#NexT-%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E4%BF%AE%E6%94%B9"><span class="nav-number">1.</span> <span class="nav-text">NexT 配置文件修改</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E5%8F%8B%E9%93%BE%E9%A1%B5%E9%9D%A2"><span class="nav-number">2.</span> <span class="nav-text">创建友链页面</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B7%BB%E5%8A%A0%E5%8F%8B%E9%93%BE"><span class="nav-number">3.</span> <span class="nav-text">添加友链</span></a></li></ol></div>
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#NexT-%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6%E4%BF%AE%E6%94%B9"><span class="nav-number">1.</span> <span class="nav-text">NexT 配置文件修改</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E5%8F%8B%E9%93%BE%E9%A1%B5%E9%9D%A2"><span class="nav-number">2.</span> <span class="nav-text">创建友链页面</span></a></li></ol></div>
         </div>
         <!--/noindex-->
 
@@ -310,13 +311,28 @@
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">友链: /links || fas fa-link</span><br></pre></td></tr></table></figure>
 
 <h2 id="创建友链页面"><a href="#创建友链页面" class="headerlink" title="创建友链页面"></a>创建友链页面</h2><p>使用 <code>hexo new page link</code> 可以新建一个 link 页面，我们将其作为友链页面。创建完成后，写入以下内容（自己使用时请按需修改）：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: 友链</span><br><span class="line">type: links</span><br><span class="line"></span><br><span class="line">---</span><br><span class="line"></span><br><span class="line">&lt;div class=&quot;links-content&quot;&gt;</span><br><span class="line">&lt;div class=&quot;no-icon note warning&quot;&gt;</span><br><span class="line">&lt;div class=&quot;link-info&quot;&gt;欢迎与我交换友链！&lt;/div&gt;&lt;/div&gt;</span><br><span class="line">&lt;div class=&quot;link-navigation&quot;&gt;</span><br><span class="line">&#123;% for link in site.data.links %&#125;</span><br><span class="line">&lt;div class=&quot;card&quot;&gt;&lt;img class=&quot;ava nomediumzoom&quot; src=&quot;&#123;&#123; link.avatar &#125;&#125;&quot;/&gt;</span><br><span class="line">&lt;div class=&quot;card-header&quot;&gt;</span><br><span class="line">&lt;div&gt;&lt;a href=&quot;&#123;&#123; link.site &#125;&#125;&quot; target=&quot;_blank&quot;&gt; &#123;&#123; link.name &#125;&#125;&lt;/a&gt; &lt;/div&gt;</span><br><span class="line">&lt;div class=&quot;info&quot;&gt;&#123;&#123; link.info &#125;&#125;&lt;/div&gt;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line">&#123;% endfor %&#125;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">------</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#123;% note success %&#125;</span><br><span class="line"></span><br><span class="line">**友链申请条件：**</span><br><span class="line"></span><br><span class="line">- 网站内容符合中国大陆法律</span><br><span class="line">- 已开启HTTPS，且至少有3篇博客，最新一篇为三个月之内发表</span><br><span class="line">- 网站内容以原创为主，技术性博客优先，娱乐性博客除非特别感兴趣，否则不会考虑</span><br><span class="line"></span><br><span class="line">**友链格式：**</span><br><span class="line"></span><br><span class="line">```yaml</span><br><span class="line">- name: Cu Blog</span><br><span class="line">  site: https://www.litcu.cn</span><br><span class="line">  info: 安全新人小醋的快乐收集处</span><br><span class="line">  avatar: https://img.litcu.cn/avatar/avatar1.jpg</span><br><span class="line">```</span><br><span class="line"></span><br><span class="line">&#123;% endnote %&#125;</span><br></pre></td></tr></table></figure>
+<pre><code>---
+title: 友链
+type: links
 
-<p>核心是 HTML 代码中的那个 for 循环，<code>site.data</code> 就是 <code>source/_data</code> 目录，后面的 <code>links</code> 就是我们之后要创建的 <code>links.yml</code> 友链文件。如果后续没有正常显示友链，可以看看这里是否出现了问题。</p>
-<h2 id="添加友链"><a href="#添加友链" class="headerlink" title="添加友链"></a>添加友链</h2><p>在 <code>source/_data/</code> 目录下新建 link.yml 文件，写入以下内容：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- name: Cu Blog</span><br><span class="line">  site: https://www.litcu.cn</span><br><span class="line">  info: 安全新人小醋的快乐收集处</span><br><span class="line">  avatar: https://img.litcu.cn/avatar/avatar1.jpg</span><br></pre></td></tr></table></figure>
+---
 
-<p>然后 <code>hexo cl &amp;&amp; hexo g &amp;&amp; hexo s</code> 就可以看到效果啦！</p>
+&lt;div class=&quot;links-content&quot;&gt;
+&lt;div class=&quot;no-icon note warning&quot;&gt;
+&lt;div class=&quot;link-info&quot;&gt;欢迎与我交换友链！&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;link-navigation&quot;&gt;
+&#123;% for link in site.data.links %&#125;
+<div class="card"><img class="ava nomediumzoom" src="&#123;&#123; link.avatar &#125;&#125;"/>
+<div class="card-header">
+<div><a href="&#123;&#123; link.site &#125;&#125;" target="_blank"> &#123;&#123; link.name &#125;&#125;</a> </div>
+<div class="info">&#123;&#123; link.info &#125;&#125;</div>
+</div>
+</div>
+&#123;% endfor %&#125;
+&lt;/div&gt;
+
+
+</code></pre>
 
     </div>
 
