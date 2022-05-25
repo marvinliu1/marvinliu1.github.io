@@ -4,7 +4,7 @@
   
     
     <entry>
-      <title>Testing the Hexo D command</title>
+      <title>How to add external links in Hexo</title>
       <link href="/2022/03/12/2022%20test/"/>
       <url>/2022/03/12/2022%20test/</url>
       
@@ -23,31 +23,6 @@
         <tags>
             
             <tag> Linux </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>Hexo - How to add external links</title>
-      <link href="/2021/05/22/Adding-links-into-Hexo-NexT8%20/"/>
-      <url>/2021/05/22/Adding-links-into-Hexo-NexT8%20/</url>
-      
-        <content type="html"><![CDATA[<h2 id="创建友链页面"><a href="#创建友链页面" class="headerlink" title="创建友链页面"></a>创建友链页面</h2><p>使用 <code>hexo new page link</code> 可以新建一个 link 页面，我们将其作为友链页面。创建完成后，写入以下内容（自己使用时请按需修改）：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: 友链</span><br><span class="line">type: links</span><br><span class="line"></span><br><span class="line">---</span><br><span class="line"></span><br><span class="line">&lt;div class=&quot;links-content&quot;&gt;</span><br><span class="line">&lt;div class=&quot;no-icon note warning&quot;&gt;</span><br><span class="line">&lt;div class=&quot;link-info&quot;&gt;欢迎与我交换友链！&lt;/div&gt;&lt;/div&gt;</span><br><span class="line">&lt;div class=&quot;link-navigation&quot;&gt;</span><br><span class="line">&#123;% for link in site.data.links %&#125;</span><br><span class="line">&lt;div class=&quot;card&quot;&gt;&lt;img class=&quot;ava nomediumzoom&quot; src=&quot;&#123;&#123; link.avatar &#125;&#125;&quot;/&gt;</span><br><span class="line">&lt;div class=&quot;card-header&quot;&gt;</span><br><span class="line">&lt;div&gt;&lt;a href=&quot;&#123;&#123; link.site &#125;&#125;&quot; target=&quot;_blank&quot;&gt; &#123;&#123; link.name &#125;&#125;&lt;/a&gt; &lt;/div&gt;</span><br><span class="line">&lt;div class=&quot;info&quot;&gt;&#123;&#123; link.info &#125;&#125;&lt;/div&gt;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line">&#123;% endfor %&#125;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">------</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#123;% note success %&#125;</span><br><span class="line"></span><br><span class="line">**友链申请条件：**</span><br><span class="line"></span><br><span class="line">- 网站内容符合中国大陆法律</span><br><span class="line">- 已开启HTTPS，且至少有3篇博客，最新一篇为三个月之内发表</span><br><span class="line">- 网站内容以原创为主，技术性博客优先，娱乐性博客除非特别感兴趣，否则不会考虑</span><br><span class="line"></span><br><span class="line">**友链格式：**</span><br><span class="line"></span><br><span class="line">```yaml</span><br><span class="line">- name: Cu Blog</span><br><span class="line">  site: https://www.litcu.cn</span><br><span class="line">  info: 安全新人小醋的快乐收集处</span><br><span class="line">  avatar: https://img.litcu.cn/avatar/avatar1.jpg</span><br><span class="line">```</span><br><span class="line"></span><br><span class="line">&#123;% endnote %&#125;</span><br></pre></td></tr></table></figure><p>核心是 HTML 代码中的那个 for 循环，<code>site.data</code> 就是 <code>source/_data</code> 目录，后面的 <code>links</code> 就是我们之后要创建的 <code>links.yml</code> 友链文件。如果后续没有正常显示友链，可以看看这里是否出现了问题。</p><h2 id="添加友链"><a href="#添加友链" class="headerlink" title="添加友链"></a>添加友链</h2><p>在 <code>source/_data/</code> 目录下新建 link.yml 文件，写入以下内容：</p><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">- name: Cu Blog</span><br><span class="line">  site: https://www.litcu.cn</span><br><span class="line">  info: 安全新人小醋的快乐收集处</span><br><span class="line">  avatar: https://img.litcu.cn/avatar/avatar1.jpg</span><br></pre></td></tr></table></figure><p>然后 <code>hexo cl &amp;&amp; hexo g &amp;&amp; hexo s</code> 就可以看到效果啦！</p>]]></content>
-      
-      
-      <categories>
-          
-          <category> Hexo </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> Hexo </tag>
             
         </tags>
       
